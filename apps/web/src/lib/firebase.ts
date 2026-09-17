@@ -1,10 +1,11 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  Auth,
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -16,17 +17,29 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
-// Initialize Firebase once
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const auth = getAuth(app);
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
 
-// Configure Google Provider
-export const googleProvider = new GoogleAuthProvider();
+// Safe, resilient initialization so invalid or missing keys never crash the app
+try {
+  const isApiKeyValid =
+    typeof firebaseConfig.apiKey === 'string' &&
+    firebaseConfig.apiKey.trim().length > 10 &&
+    !firebaseConfig.apiKey.includes('your_');
 
-// prompt: 'select_account' ensures Google's official popup lists ALL real device Google accounts
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-});
+  if (isApiKeyValid) {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({
+      prompt: 'select_account',
+    });
+  }
+} catch (e) {
+  // Prevent unhandled FirebaseError from breaking the client
+  console.warn('[Firebase] Optional auth initialization skipped:', e);
+}
 
-export { signInWithPopup, signInWithRedirect, getRedirectResult };
+export { auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult };
 export default app;

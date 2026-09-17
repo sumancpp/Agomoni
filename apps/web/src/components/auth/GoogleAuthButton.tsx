@@ -33,6 +33,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   // Check for returning redirect login result on mount
   useEffect(() => {
     let isMounted = true;
+    if (!auth) return;
     getRedirectResult(auth)
       .then(async (result) => {
         if (!result || !result.user || !isMounted) return;
@@ -76,6 +77,16 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   }, [login, mode, navigate, onSuccess]);
 
   const handleGoogleSignIn = async () => {
+    if (!auth || !googleProvider) {
+      if (onError) {
+        onError(
+          lang === 'bn'
+            ? 'গুগল সাইন-ইন সাময়িকভাবে অনুপলব্ধ। অনুগ্রহ করে ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন।'
+            : 'Google Sign-In is temporarily unavailable. Please sign in with email and password.'
+        );
+      }
+      return;
+    }
     setIsLoading(true);
     try {
       // 1. Trigger Firebase Google popup with 'select_account' prompt
@@ -125,7 +136,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       }
 
       // If popup was blocked by browser or extensions, seamless redirect fallback
-      if (err?.code === 'auth/popup-blocked') {
+      if (err?.code === 'auth/popup-blocked' && auth && googleProvider) {
         try {
           await signInWithRedirect(auth, googleProvider);
           return;
