@@ -214,7 +214,10 @@ async function main() {
   ];
 
   for (const item of emergencyData) {
-    await prisma.emergencyResource.create({ data: item });
+    const existing = await prisma.emergencyResource.findFirst({ where: { title: item.title } });
+    if (!existing) {
+      await prisma.emergencyResource.create({ data: item });
+    }
   }
   console.log('✓ Seeded Emergency directory');
 
@@ -1176,33 +1179,54 @@ async function main() {
   // 7. Seed Sample Lost & Found Post
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 30);
-  await prisma.lostFoundPost.create({
-    data: {
-      userId: admin.id,
-      category: 'LOST_ITEM',
-      title: 'Lost Brown Leather Wallet with ID cards',
-      nameOrItem: 'Titan Brown Leather Wallet',
-      description: 'Lost around Bagbazar Sarbojanin pandal premises during evening rush. Contains Aadhar and metro card.',
-      lastSeenArea: 'Bagbazar Sarbojanin, North Kolkata',
-      lastSeenDate: new Date('2026-10-17'),
-      lastSeenTime: 'Evening (approx 7:30 PM)',
-      photoUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&q=80',
-      contactMethod: 'IN_APP_MESSAGE',
-      status: 'ACTIVE',
-      isPaid: true,
-      expiresAt,
-    },
-  });
+  const existingPost = await prisma.lostFoundPost.findFirst({ where: { userId: admin.id } });
+  if (!existingPost) {
+    await prisma.lostFoundPost.create({
+      data: {
+        userId: admin.id,
+        category: 'LOST_ITEM',
+        title: 'Lost Brown Leather Wallet with ID cards',
+        nameOrItem: 'Titan Brown Leather Wallet',
+        description: 'Lost around Bagbazar Sarbojanin pandal premises during evening rush. Contains Aadhar and metro card.',
+        lastSeenArea: 'Bagbazar Sarbojanin, North Kolkata',
+        lastSeenDate: new Date('2026-10-17'),
+        lastSeenTime: 'Evening (approx 7:30 PM)',
+        photoUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&q=80',
+        contactMethod: 'IN_APP_MESSAGE',
+        status: 'ACTIVE',
+        isPaid: true,
+        expiresAt,
+      },
+    });
+  }
   console.log('✓ Seeded sample Lost & Found post');
 
   console.log('🎉 Agomoni Database seeding complete!');
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+export { main as seedDatabase };
+
+export async function autoSeedIfEmpty() {
+  try {
+    const count = await prisma.musicPlaylist.count();
+    if (count === 0) {
+      console.log('🌱 Database is empty (0 playlists found). Auto-seeding initial festive tracks & calendar...');
+      await main();
+    }
+  } catch (err: any) {
+    console.warn('⚠️ Auto-seed check warning:', err?.message || err);
+  }
+}
+
+// If run directly via CLI (npm run db:seed or tsx src/prisma/seed.ts)
+const isDirectRun = process.argv[1]?.includes('seed.ts') || process.argv[1]?.includes('seed.js');
+if (isDirectRun) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

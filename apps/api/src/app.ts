@@ -27,6 +27,20 @@ import config from './config/index.js';
 
 export const app = express();
 
+// Trust reverse proxy (Render, Heroku, Cloudflare, etc.) for X-Forwarded-For rate-limiting
+app.set('trust proxy', 1);
+
+// Root route for ping / health status / deployment checks
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'Agomoni API',
+    version: '1.0.0',
+    health: '/health',
+    timestamp: new Date(),
+  });
+});
+
 // Security Headers
 app.use(
   helmet({
