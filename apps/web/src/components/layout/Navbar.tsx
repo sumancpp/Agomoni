@@ -235,28 +235,28 @@ export const Navbar: React.FC = () => {
             </span>
           </Link>
 
-          {/* Emergency Quick Action */}
+          {/* Emergency Quick Action (Desktop/Tablet) */}
           <Link
             to="/emergency"
-            className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/35 backdrop-blur-md transition-all shadow-sm"
+            className="hidden md:flex p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/35 backdrop-blur-md transition-all shadow-sm"
             title={t.nav.emergency}
           >
             <ShieldAlert size={16} />
           </Link>
 
-          {/* Language Switcher */}
+          {/* Language Switcher (Desktop/Tablet) */}
           <button
             onClick={toggleLang}
-            className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-cream-200 border border-white/15 hover:border-white/25 text-xs font-semibold flex items-center gap-1 backdrop-blur-md transition-all shadow-sm"
+            className="hidden md:flex px-2 sm:px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-cream-200 border border-white/15 hover:border-white/25 text-xs font-semibold items-center gap-1 backdrop-blur-md transition-all shadow-sm"
             title="Switch Language"
           >
             <Globe size={13} className="text-gold-400" />
             <span>{lang === 'bn' ? 'বাং' : 'EN'}</span>
           </button>
 
-          {/* Notification Bell (Logged in only) */}
+          {/* Notification Bell (Logged in only, Desktop/Tablet) */}
           {isAuthenticated && (
-            <div className="relative">
+            <div className="hidden md:block relative">
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
                 className="relative p-2 rounded-xl bg-white/10 hover:bg-white/15 text-cream-200 border border-white/15 hover:border-white/25 transition-all shadow-sm"
@@ -319,41 +319,43 @@ export const Navbar: React.FC = () => {
             </div>
           )}
 
-          {/* User Auth Profile / Login */}
-          {isAuthenticated ? (
-            <Link
-              to="/profile"
-              className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-white/10 transition-colors backdrop-blur-sm"
-              title="My Profile"
-            >
-              {user?.profile?.avatarUrl ? (
-                <img
-                  src={user.profile.avatarUrl}
-                  alt={user.profile.displayName}
-                  className="w-8 h-8 rounded-full object-cover border border-gold-500/40"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-sindoor-800 text-white flex items-center justify-center text-xs font-bold border border-gold-500/30">
-                  {user?.profile?.displayName?.charAt(0) || 'U'}
-                </div>
-              )}
-            </Link>
-          ) : (
-            <Link to="/login" className="inline-flex items-center">
-              <FestiveButton size="sm" variant="gold" className="flex items-center gap-1.5 font-bold shadow-md">
-                <LogIn size={13} className="text-night-950" />
-                <span>{t.nav.login}</span>
-              </FestiveButton>
-            </Link>
-          )}
+          {/* User Auth Profile / Login (Desktop/Tablet) */}
+          <div className="hidden md:flex items-center">
+            {isAuthenticated ? (
+              <Link
+                to="/profile"
+                className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-white/10 transition-colors backdrop-blur-sm"
+                title="My Profile"
+              >
+                {user?.profile?.avatarUrl ? (
+                  <img
+                    src={user.profile.avatarUrl}
+                    alt={user.profile.displayName}
+                    className="w-8 h-8 rounded-full object-cover border border-gold-500/40"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-sindoor-800 text-white flex items-center justify-center text-xs font-bold border border-gold-500/30">
+                    {user?.profile?.displayName?.charAt(0) || 'U'}
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <Link to="/login" className="inline-flex items-center">
+                <FestiveButton size="sm" variant="gold" className="flex items-center gap-1.5 font-bold shadow-md">
+                  <LogIn size={13} className="text-night-950" />
+                  <span>{t.nav.login}</span>
+                </FestiveButton>
+              </Link>
+            )}
+          </div>
 
-          {/* Mobile Menu Toggle Button */}
+          {/* Mobile 3-Line Menu Toggle Button (Mobile Only) */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/15 text-gold-400 border border-gold-500/30 transition-colors"
             aria-label="Toggle navigation menu"
           >
-            {isMobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -430,6 +432,44 @@ export const Navbar: React.FC = () => {
                   </div>
                 </div>
               </Link>
+            </div>
+
+            {/* Language Switcher & Notifications inside Mobile Drawer */}
+            <div className="pt-2 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#240F0F]/90 border border-gold-500/20 text-cream-100 shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-semibold text-cream-200">
+                  <Globe size={15} className="text-gold-400" />
+                  <span>{lang === 'bn' ? 'ভাষা নির্বাচন' : 'Language'}</span>
+                </div>
+                <button
+                  onClick={toggleLang}
+                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-gold-300 border border-gold-500/30 text-xs font-bold transition-all"
+                >
+                  {lang === 'bn' ? 'English (EN)' : 'বাংলা (বাং)'}
+                </button>
+              </div>
+
+              {isAuthenticated && (
+                <div
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsNotifOpen(true);
+                  }}
+                  className="p-3 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-between cursor-pointer hover:bg-gold-500/20 transition-all shadow-sm"
+                >
+                  <div className="flex items-center gap-2 text-xs font-semibold text-cream-100">
+                    <Bell size={15} className="text-gold-400" />
+                    <span>Agomoni Alerts</span>
+                  </div>
+                  {unreadCount > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full bg-sindoor-600 text-white text-[10px] font-bold animate-pulse">
+                      {unreadCount} new
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-cream-400">View</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Auth / Account Controls inside Drawer */}
