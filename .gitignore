@@ -74,6 +74,8 @@ uploads/*
 !uploads/.gitkeep
 apps/api/uploads/*
 !apps/api/uploads/.gitkeep
+!apps/api/uploads/outfits
+!apps/api/uploads/outfits/*
 storage/
 
 # Cache Directories

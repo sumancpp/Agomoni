@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { completePayment } from '../lib/payments';
-import { apiFetch } from '../lib/api';
+import { apiFetch, apiUrl } from '../lib/api';
 
 export const OutfitPage: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -28,6 +28,25 @@ export const OutfitPage: React.FC = () => {
   const [result, setResult] = useState<any>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+
+  const resolveOutfitUrl = (url: string | null | undefined, itemGender: string): string => {
+    if (!url) {
+      return itemGender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    if (url.startsWith('/outfits/')) {
+      return url;
+    }
+    if (url.startsWith('/uploads/outfits/')) {
+      return url.replace('/uploads/outfits/', '/outfits/');
+    }
+    if (url.startsWith('/uploads/')) {
+      return apiUrl(url);
+    }
+    return apiUrl(url);
+  };
 
   const generationSteps = [
     {
@@ -689,20 +708,21 @@ export const OutfitPage: React.FC = () => {
               {/* Rendered Image with reliable local fallback and grand reveal animation */}
               <div className="relative aspect-square max-w-sm mx-auto rounded-3xl overflow-hidden border-2 border-gold-500/60 shadow-2xl bg-night-850 group transition-all duration-500 hover:shadow-[0_0_45px_rgba(212,175,55,0.4)]">
                 <img
-                  src={result.generation.resultImageUrl}
+                  src={resolveOutfitUrl(result.generation?.resultImageUrl, gender)}
                   alt="Transformed Outfit"
                   className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 animate-in fade-in zoom-in-95 duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;
                     const fallback = gender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
-                    if (!target.src.endsWith(fallback)) {
+                    const fullFallback = window.location.origin + fallback;
+                    if (target.src !== fullFallback) {
                       target.src = fallback;
                     }
                   }}
                 />
                 <div className="absolute bottom-2 right-2 flex gap-1.5">
                   <a
-                    href={result.generation.resultImageUrl}
+                    href={resolveOutfitUrl(result.generation?.resultImageUrl, gender)}
                     target="_blank"
                     rel="noreferrer"
                     download="agomoni-festive-outfit.jpg"
@@ -818,13 +838,14 @@ export const OutfitPage: React.FC = () => {
               >
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-black/60">
                   <img
-                    src={item.resultImageUrl}
+                    src={resolveOutfitUrl(item.resultImageUrl, item.gender || 'FEMALE')}
                     alt={item.style}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     onError={(e) => {
                       const target = e.currentTarget;
                       const fallback = item.gender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
-                      if (!target.src.endsWith(fallback)) {
+                      const fullFallback = window.location.origin + fallback;
+                      if (target.src !== fullFallback) {
                         target.src = fallback;
                       }
                     }}

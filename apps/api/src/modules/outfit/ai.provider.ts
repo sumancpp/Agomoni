@@ -34,7 +34,7 @@ export class DevelopmentMockProvider implements IAIProvider {
     const isNight = input.style === 'Night Puja';
     const isAshtami = input.pujaDay === 'Ashtami' || input.style === 'Ashtami Special';
 
-    let resultImageUrl = '/uploads/outfits/female-traditional.jpg';
+    let resultImageUrl = '/outfits/female-traditional.jpg';
     let styleDescriptionEnglish = 'Traditional Bengali Lal-Paar Garad Saree with gold jewelry, alta, and red bindi.';
     let styleDescriptionBengali = 'ঐতিহ্যবাহী লাল-পাড় গরদ শাড়ি, গালে চন্দনের ছোঁয়া, আলতা রাঙা হাত আর উজ্জ্বল লাল টিপ। অষ্টমীর অঞ্জলির জন্য সেরা সাজ।';
     let colorPalette = ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Kash Cream)'];
@@ -46,7 +46,7 @@ export class DevelopmentMockProvider implements IAIProvider {
 
     if (isMale) {
       if (isModern || isNight) {
-        resultImageUrl = '/uploads/outfits/male-modern.jpg';
+        resultImageUrl = '/outfits/male-modern.jpg';
         styleDescriptionEnglish = 'Contemporary Indo-Western Nehru jacket ensemble with embroidered mandarin collar for evening pandal hopping.';
         styleDescriptionBengali = 'আধুনিক ইন্দো-ওয়েস্টার্ন জহর কোট ও ফ্যাশনেবল কুর্তা সেট। নবমী বা সান্ধ্য প্যান্ডেল হপিংয়ের জন্য অত্যন্ত মানানসই।';
         colorPalette = ['#1A2B4C (Midnight Navy)', '#D4AF37 (Antique Gold)', '#E0D6C3 (Silk Ivory)'];
@@ -56,7 +56,7 @@ export class DevelopmentMockProvider implements IAIProvider {
           'Comfortable for walking and long pandal hopping routes.',
         ];
       } else {
-        resultImageUrl = '/uploads/outfits/male-traditional.jpg';
+        resultImageUrl = '/outfits/male-traditional.jpg';
         styleDescriptionEnglish = 'Handloom Tussar Silk Kurta (Panjabi) with royal Maroon Dhuti and heritage gold-embroidered Nehru vest.';
         styleDescriptionBengali = 'হাতে বোনা তসর সিল্কের পাঞ্জাবি, মেরুন ধুতি আর সোনালী জরির জহর কোট। পুজো প্যান্ডেলে রাজকীয় ঐতিহ্যবাহী উপস্থিতি।';
         colorPalette = ['#6B1D2F (Heritage Maroon)', '#D4AF37 (Royal Gold)', '#FFF8DC (Cornsilk)'];
@@ -68,7 +68,7 @@ export class DevelopmentMockProvider implements IAIProvider {
       }
     } else if (isFemale) {
       if (isModern) {
-        resultImageUrl = '/uploads/outfits/female-modern.jpg';
+        resultImageUrl = '/outfits/female-modern.jpg';
         styleDescriptionEnglish = 'Contemporary fusion drape saree with chic designer blouse and statement temple jewellery.';
         styleDescriptionBengali = 'ফিউশন ডিজাইনার লুক—আধুনিক শৈলী আর ঐতিহ্যবাহী গহনার নিখুঁত মেলবন্ধন।';
         colorPalette = ['#2C1654 (Royal Purple)', '#D4AF37 (Muted Gold)', '#FF8C00 (Festive Amber)'];
@@ -78,7 +78,7 @@ export class DevelopmentMockProvider implements IAIProvider {
           'Comfortable block heels for easy pandal exploration.',
         ];
       } else if (isNight) {
-        resultImageUrl = '/uploads/outfits/female-modern.jpg';
+        resultImageUrl = '/outfits/female-modern.jpg';
         styleDescriptionEnglish = 'Midnight festive silk ensemble with subtle zari work, tailor-made for evening lighting and pandal tours.';
         styleDescriptionBengali = 'নাইট প্যান্ডেল হপিংয়ের জন্য জমকালো শেডের সিল্ক শাড়ি ও সূক্ষ্ম জরির কাজ। রাতের আলোয় অসাধারণ উজ্জ্বলতা।';
         colorPalette = ['#101820 (Midnight Black)', '#F2AA4C (Warm Gold)', '#800020 (Burgundy)'];
@@ -90,7 +90,7 @@ export class DevelopmentMockProvider implements IAIProvider {
       }
     } else {
       // OTHER
-      resultImageUrl = '/uploads/outfits/festive-fusion.jpg';
+      resultImageUrl = '/outfits/festive-fusion.jpg';
       styleDescriptionEnglish = 'Fluid celebratory festive drape with artisanal kantha embroidery and rich autumn hues.';
       styleDescriptionBengali = 'উৎসবের আনন্দমুখর ফিউশন সাজ—কাঁথাস্টিচের সূক্ষ্ম কাজ ও শরতের উৎসবের রঙে রঙিন।';
       colorPalette = ['#D4AF37 (Gold)', '#8B0000 (Sindoor)', '#F5F5DC (Ivory)'];
