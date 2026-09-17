@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "prisma generate --schema=src/prisma/schema.prisma && prisma db push --schema=src/prisma/schema.prisma --accept-data-loss && tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "db:generate": "prisma generate --schema=src/prisma/schema.prisma",
     "db:push": "prisma db push --schema=src/prisma/schema.prisma",

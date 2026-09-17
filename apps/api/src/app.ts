@@ -47,18 +47,30 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (process.env.NODE_ENV === 'production') {
-        const allowedOrigins = [
-          config.CLIENT_URL,
-          'http://localhost:5173',
-          'http://localhost:4000',
-        ].filter(Boolean);
-        if (allowedOrigins.includes(origin) || allowedOrigins.some((o) => origin.startsWith(o))) {
-          return callback(null, true);
-        }
-        return callback(new Error('Blocked by CORS policy'));
+
+      const allowedOrigins = [
+        config.CLIENT_URL,
+        'http://localhost:5173',
+        'http://localhost:4000',
+        'http://localhost:3000',
+      ].filter(Boolean);
+
+      // Always allow configured CLIENT_URL and localhost
+      if (allowedOrigins.some((o) => origin === o || origin.startsWith(o as string))) {
+        return callback(null, true);
       }
-      return callback(null, true);
+
+      // Allow all Vercel preview and production deployments
+      if (origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+
+      // In development, allow everything
+      if (process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Blocked by CORS policy'));
     },
     credentials: true,
   })
