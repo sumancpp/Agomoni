@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { MapPin, Calendar, Share2, Sparkles, BookHeart, Check, ArrowLeft } from 'lucide-react';
 import FestiveButton from '../components/common/FestiveButton';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../lib/api';
 
 interface SharedMemory {
   id: string;
@@ -32,7 +33,7 @@ export const SharedMemoryPage: React.FC = () => {
         return;
       }
       try {
-        const res = await fetch(`/api/v1/memories/shared/${token}`);
+        const res = await apiFetch(`/api/v1/memories/shared/${token}`);
         const data = await res.json();
         if (data.success && data.memory) {
           setMemory(data.memory);

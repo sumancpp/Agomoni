@@ -192,7 +192,7 @@ export const MemoryPage: React.FC = () => {
 
   const handleToggleShare = async (id: string) => {
     try {
-      const res = await fetch(`/api/v1/memories/${id}/share`, {
+      const res = await apiFetch(`/api/v1/memories/${id}/share`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -224,7 +224,7 @@ export const MemoryPage: React.FC = () => {
   const handleDeleteMemory = async (id: string) => {
     if (!window.confirm(lang === 'bn' ? 'এই স্মৃতিটি মুছে ফেলতে চান?' : 'Delete this memory permanently?')) return;
     try {
-      await fetch(`/api/v1/memories/${id}`, {
+      await apiFetch(`/api/v1/memories/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

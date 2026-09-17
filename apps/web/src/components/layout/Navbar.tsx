@@ -144,7 +144,7 @@ export const Navbar: React.FC = () => {
 
   const handleNotificationClick = async (notif: NotificationItem) => {
     try {
-      await fetch(`/api/v1/notifications/${notif.id}/read`, {
+      await apiFetch(`/api/v1/notifications/${notif.id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       });

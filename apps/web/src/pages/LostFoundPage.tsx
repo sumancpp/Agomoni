@@ -166,7 +166,7 @@ export const LostFoundPage: React.FC = () => {
     setIsLoading(true);
     try {
       const url = `/api/v1/lost-found?category=${category}${searchQuery.trim() ? `&search=${encodeURIComponent(searchQuery.trim())}` : ''}`;
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       const data = await res.json();
       if (data.success) {
         setPosts(data.posts);
@@ -202,7 +202,7 @@ export const LostFoundPage: React.FC = () => {
   const handleClearSearch = () => {
     setSearchQuery('');
     // Trigger fetch without search
-    fetch(`/api/v1/lost-found?category=${category}`)
+    apiFetch(`/api/v1/lost-found?category=${category}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setPosts(d.posts);
@@ -266,7 +266,7 @@ export const LostFoundPage: React.FC = () => {
     setIsMatchesModalOpen(true);
     setIsLoadingMatches(true);
     try {
-      const res = await fetch(`/api/v1/lost-found/${post.id}/matches`, {
+      const res = await apiFetch(`/api/v1/lost-found/${post.id}/matches`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
@@ -299,7 +299,7 @@ export const LostFoundPage: React.FC = () => {
     setIsCheckingContactStatus(true);
 
     try {
-      const res = await fetch(`/api/v1/lost-found/${postInfo.postId}/contact-status`, {
+      const res = await apiFetch(`/api/v1/lost-found/${postInfo.postId}/contact-status`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -352,7 +352,7 @@ export const LostFoundPage: React.FC = () => {
     if (!contactTarget || !token) return;
     setIsSendingRelay(true);
     try {
-      const res = await fetch(`/api/v1/lost-found/${contactTarget.postId}/contact`, {
+      const res = await apiFetch(`/api/v1/lost-found/${contactTarget.postId}/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

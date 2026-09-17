@@ -1,16 +1,36 @@
 /**
  * Central API utility for Agomoni.
  *
- * All fetch calls should use `apiUrl('/path')` so that in production the
- * correct backend host (VITE_API_URL) is used instead of the Vercel frontend
- * host, which does not serve the API.
+ * Resolves the backend host:
+ * 1. Explicit import.meta.env.VITE_API_URL if configured
+ * 2. In production / remote deployments (e.g. Vercel): defaults to Render backend ('https://agomoni-4j0h.onrender.com')
+ * 3. In local development: defaults to 'http://localhost:4000'
  */
 
-const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const getBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim().length > 0) {
+    return envUrl.trim().replace(/\/$/, '');
+  }
+
+  // If running in browser and not on localhost, use the production Render backend
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1' &&
+    window.location.hostname !== ''
+  ) {
+    return 'https://agomoni-4j0h.onrender.com';
+  }
+
+  return 'http://localhost:4000';
+};
+
+const BASE_URL = getBaseUrl();
 
 /**
  * Resolve an API path to a full URL.
- * @example apiUrl('/api/v1/music/playlists') → 'https://agomoni-api.onrender.com/api/v1/music/playlists'
+ * @example apiUrl('/api/v1/music/playlists') → 'https://agomoni-4j0h.onrender.com/api/v1/music/playlists'
  */
 export function apiUrl(path: string): string {
   if (!path.startsWith('/')) {

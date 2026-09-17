@@ -63,7 +63,7 @@ export const HomePage: React.FC = () => {
     }
 
     const fetchLiveUsers = () => {
-      fetch(`/api/v1/stats/live-users?sessionId=${sessionId}`)
+      apiFetch(`/api/v1/stats/live-users?sessionId=${sessionId}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success && typeof data.count === 'number') {

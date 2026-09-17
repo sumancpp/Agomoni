@@ -102,7 +102,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       const idToken = await firebaseUser.getIdToken();
 
       // 3. Authenticate with Agomoni backend (registers if new, logs in if existing)
-      const authRes = await fetch('/api/v1/auth/google', {
+      const authRes = await apiFetch('/api/v1/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

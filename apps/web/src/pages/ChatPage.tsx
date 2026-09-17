@@ -182,7 +182,7 @@ export const ChatPage: React.FC = () => {
   const fetchMessages = async (convId: string) => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/v1/chat/conversations/${convId}/messages`, {
+      const res = await apiFetch(`/api/v1/chat/conversations/${convId}/messages`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -313,7 +313,7 @@ export const ChatPage: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`/api/v1/chat/conversations/${conversationId}/messages`, {
+      const res = await apiFetch(`/api/v1/chat/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

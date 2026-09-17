@@ -81,7 +81,7 @@ export const AdminPage: React.FC = () => {
 
     setActionLoading(userId);
     try {
-      const res = await fetch(`/api/v1/admin/users/${userId}`, {
+      const res = await apiFetch(`/api/v1/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -103,7 +103,7 @@ export const AdminPage: React.FC = () => {
   const handleToggleBanUser = async (userId: string) => {
     setActionLoading(userId);
     try {
-      const res = await fetch(`/api/v1/admin/users/${userId}/ban`, {
+      const res = await apiFetch(`/api/v1/admin/users/${userId}/ban`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -128,7 +128,7 @@ export const AdminPage: React.FC = () => {
 
     setActionLoading(postId);
     try {
-      const res = await fetch(`/api/v1/admin/lost-found/${postId}`, {
+      const res = await apiFetch(`/api/v1/admin/lost-found/${postId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -149,7 +149,7 @@ export const AdminPage: React.FC = () => {
   // Moderation Queue Actions
   const handleResolveReport = async (id: string, banUser: boolean) => {
     try {
-      const res = await fetch(`/api/v1/admin/reports/${id}/resolve`, {
+      const res = await apiFetch(`/api/v1/admin/reports/${id}/resolve`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

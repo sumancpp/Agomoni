@@ -116,7 +116,7 @@ export const EmergencyPage: React.FC = () => {
 
   const handleDeleteContact = async (id: string) => {
     try {
-      await fetch(`/api/v1/emergency/contacts/${id}`, {
+      await apiFetch(`/api/v1/emergency/contacts/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
