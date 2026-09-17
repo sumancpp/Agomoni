@@ -112,6 +112,12 @@ if (!fs.existsSync(uploadsDir)) {
 }
 app.use('/uploads', express.static(uploadsDir));
 
+// Fallback: Also serve apps/api/uploads if running from workspace root
+const nestedUploadsDir = path.resolve(process.cwd(), 'apps/api/uploads');
+if (fs.existsSync(nestedUploadsDir) && nestedUploadsDir !== uploadsDir) {
+  app.use('/uploads', express.static(nestedUploadsDir));
+}
+
 // Multer storage for secure image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
