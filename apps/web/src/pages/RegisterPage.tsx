@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../lib/api';
 import FestiveButton from '../components/common/FestiveButton';
 import GoogleAuthButton from '../components/auth/GoogleAuthButton';
 
@@ -43,7 +44,7 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/auth/register', {
+      const res = await apiFetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

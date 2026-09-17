@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { completePayment } from '../lib/payments';
+import { apiFetch } from '../lib/api';
 
 export const OutfitPage: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -90,7 +91,7 @@ export const OutfitPage: React.FC = () => {
   const fetchStatus = async () => {
     if (!token) return;
     try {
-      const res = await fetch('/api/v1/outfit/status', {
+      const res = await apiFetch('/api/v1/outfit/status', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -106,7 +107,7 @@ export const OutfitPage: React.FC = () => {
   const fetchHistory = async () => {
     if (!token) return;
     try {
-      const res = await fetch('/api/v1/outfit/history', {
+      const res = await apiFetch('/api/v1/outfit/history', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -142,7 +143,7 @@ export const OutfitPage: React.FC = () => {
       try {
         const formData = new FormData();
         formData.append('image', file);
-        const res = await fetch('/api/v1/upload', {
+        const res = await apiFetch('/api/v1/upload', {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
@@ -198,7 +199,7 @@ export const OutfitPage: React.FC = () => {
       const sourceImage = previewUrl || inputImageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
 
       // Request generation from API
-      const res = await fetch('/api/v1/outfit/generate', {
+      const res = await apiFetch('/api/v1/outfit/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +233,7 @@ export const OutfitPage: React.FC = () => {
 
   const handleUnlockUnlimited = async () => {
     try {
-      const orderRes = await fetch('/api/v1/payments/order', {
+      const orderRes = await apiFetch('/api/v1/payments/order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

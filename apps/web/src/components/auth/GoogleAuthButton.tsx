@@ -10,6 +10,7 @@ import {
   getRedirectResult,
 } from '../../lib/firebase';
 import { Loader2 } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 interface GoogleAuthButtonProps {
   mode?: 'login' | 'register';
@@ -42,7 +43,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
         const firebaseUser = result.user;
         const idToken = await firebaseUser.getIdToken();
 
-        const authRes = await fetch('/api/v1/auth/google', {
+        const authRes = await apiFetch('/api/v1/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { apiFetch } from '../lib/api';
 
 export interface UserProfile {
   id: string;
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const res = await fetch('/api/v1/auth/me', {
+      const res = await apiFetch('/api/v1/auth/me', {
         headers: {
           Authorization: `Bearer ${currentToken}`,
         },

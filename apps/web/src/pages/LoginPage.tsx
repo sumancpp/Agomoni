@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../lib/api';
 import FestiveButton from '../components/common/FestiveButton';
 import GoogleAuthButton from '../components/auth/GoogleAuthButton';
 
@@ -28,7 +29,7 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await apiFetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

@@ -3,6 +3,7 @@ import { Play, Pause, Music, Disc, Radio, Sparkles } from 'lucide-react';
 import { useMusicPlayer, MusicTrack } from '../context/MusicPlayerContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
+import { apiFetch } from '../lib/api';
 
 interface Playlist {
   id: string;
@@ -32,7 +33,7 @@ export const MusicPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    fetch('/api/v1/music/playlists')
+    apiFetch('/api/v1/music/playlists')
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

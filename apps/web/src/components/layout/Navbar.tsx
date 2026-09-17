@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import FestiveButton from '../common/FestiveButton';
+import { apiFetch } from '../../lib/api';
 
 interface NotificationItem {
   id: string;
@@ -95,7 +96,7 @@ export const Navbar: React.FC = () => {
   const fetchNotifications = async () => {
     if (!token) return;
     try {
-      const res = await fetch('/api/v1/notifications', {
+      const res = await apiFetch('/api/v1/notifications', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -157,7 +158,7 @@ export const Navbar: React.FC = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await fetch('/api/v1/notifications/read-all', {
+      await apiFetch('/api/v1/notifications/read-all', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });

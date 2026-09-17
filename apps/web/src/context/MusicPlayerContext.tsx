@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { apiFetch } from '../lib/api';
 
 export interface MusicTrack {
   id: string;
@@ -99,7 +100,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   // Pre-load all festive tracks on mount so the playlist queue is immediately available
   useEffect(() => {
-    fetch('/api/v1/music/playlists')
+    apiFetch('/api/v1/music/playlists')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.playlists) && data.playlists.length > 0) {

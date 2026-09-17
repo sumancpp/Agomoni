@@ -4,6 +4,7 @@ import { User, Shield, Lock, Trash2, LogOut, Check, Save, MapPin } from 'lucide-
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
+import { apiFetch } from '../lib/api';
 
 export const ProfilePage: React.FC = () => {
   const { user, token, logout, refreshUser, isLoading } = useAuth();
@@ -34,7 +35,7 @@ export const ProfilePage: React.FC = () => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const res = await fetch('/api/v1/profile', {
+      const res = await apiFetch('/api/v1/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +71,7 @@ export const ProfilePage: React.FC = () => {
     if (confirmation !== 'DELETE') return;
 
     try {
-      const res = await fetch('/api/v1/auth/account', {
+      const res = await apiFetch('/api/v1/auth/account', {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

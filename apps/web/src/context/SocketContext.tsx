@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { apiUrl } from '../lib/api';
 
 interface RealtimeToast {
   id: string;
@@ -54,7 +55,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    const newSocket = io('/', {
+    const newSocket = io(apiUrl('/'), {
       auth: { token },
       path: '/socket.io',
       reconnectionAttempts: 5,

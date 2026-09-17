@@ -18,6 +18,7 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
+import { apiFetch } from '../lib/api';
 
 interface Memory {
   id: string;
@@ -75,7 +76,7 @@ export const MemoryPage: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch('/api/v1/memories', {
+      const res = await apiFetch('/api/v1/memories', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -119,7 +120,7 @@ export const MemoryPage: React.FC = () => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const res = await fetch('/api/v1/upload', {
+      const res = await apiFetch('/api/v1/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -152,7 +153,7 @@ export const MemoryPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/v1/memories', {
+      const res = await apiFetch('/api/v1/memories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

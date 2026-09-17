@@ -1,3 +1,5 @@
+import { apiFetch } from './api';
+
 interface RazorpayResponse {
   razorpay_payment_id: string;
   razorpay_signature: string;
@@ -11,7 +13,7 @@ declare global { interface Window { Razorpay?: RazorpayConstructor; } }
 type Order = { orderId: string; amount: number; currency: string; keyId: string; product: { title: string } };
 
 async function verify(token: string, orderId: string, paymentId: string, signature: string) {
-  const response = await fetch('/api/v1/payments/verify', {
+  const response = await apiFetch('/api/v1/payments/verify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ orderId, paymentId, signature }),

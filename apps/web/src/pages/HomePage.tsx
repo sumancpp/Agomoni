@@ -8,6 +8,7 @@ import AlponaDivider from '../components/common/AlponaDivider';
 import AlponaCorner from '../components/common/AlponaCorner';
 import ChalchitraHalo from '../components/puja-mode/ChalchitraHalo';
 import KashfulHorizon from '../components/puja-mode/KashfulHorizon';
+import { apiFetch } from '../lib/api';
 
 export const HomePage: React.FC = () => {
   const { lang, t } = useLanguage();
@@ -40,7 +41,7 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     // 1. Fetch active calendar data
-    fetch('/api/v1/calendar/active')
+    apiFetch('/api/v1/calendar/active')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.countdown) {
@@ -104,7 +105,7 @@ export const HomePage: React.FC = () => {
       if (activeTrack) {
         togglePlay();
       } else {
-        fetch('/api/v1/music/playlists')
+        apiFetch('/api/v1/music/playlists')
           .then((res) => res.json())
           .then((data) => {
             if (data.success && data.playlists.length > 0) {

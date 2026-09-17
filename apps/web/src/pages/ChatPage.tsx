@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
+import { apiFetch } from '../lib/api';
 
 interface Message {
   id: string;
@@ -165,7 +166,7 @@ export const ChatPage: React.FC = () => {
   const fetchConversations = async () => {
     if (!token) return;
     try {
-      const res = await fetch('/api/v1/chat/conversations', {
+      const res = await apiFetch('/api/v1/chat/conversations', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -352,7 +353,7 @@ export const ChatPage: React.FC = () => {
     if (!activeOtherUser?.id || !token) return;
     if (!window.confirm(`Are you sure you want to block ${activeOtherUser.displayName}?`)) return;
 
-    await fetch('/api/v1/chat/block', {
+    await apiFetch('/api/v1/chat/block', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -373,7 +374,7 @@ export const ChatPage: React.FC = () => {
     );
     if (!reason) return;
 
-    await fetch('/api/v1/chat/report', {
+    await apiFetch('/api/v1/chat/report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

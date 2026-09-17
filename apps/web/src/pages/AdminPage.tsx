@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
+import { apiFetch } from '../lib/api';
 
 export const AdminPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -41,11 +42,11 @@ export const AdminPage: React.FC = () => {
     setIsLoading(true);
     try {
       const [anRes, uRes, payRes, lfRes, repRes] = await Promise.all([
-        fetch('/api/v1/admin/analytics', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/admin/payments', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/admin/lost-found', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/admin/reports', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/admin/analytics', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/admin/users', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/admin/payments', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/admin/lost-found', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/admin/reports', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       const [anData, uData, payData, lfData, repData] = await Promise.all([

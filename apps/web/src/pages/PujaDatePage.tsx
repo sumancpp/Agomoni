@@ -22,6 +22,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { completePayment } from '../lib/payments';
+import { apiFetch } from '../lib/api';
 
 const PUJA_DAYS = [
   { id: 'SHASHTI', name: 'Shashti', bengali: 'মহাষষ্ঠী', icon: '🌸' },
@@ -101,9 +102,9 @@ export const PujaDatePage: React.FC = () => {
     }
     try {
       const [feedRes, convRes, myProfRes] = await Promise.all([
-        fetch('/api/v1/dating/feed', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/chat/conversations', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/dating/my-profile', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/dating/feed', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/chat/conversations', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/v1/dating/my-profile', { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       const feedData = await feedRes.json();
@@ -131,7 +132,7 @@ export const PujaDatePage: React.FC = () => {
 
   useEffect(() => {
     fetchFeedAndProfile();
-    fetch('/api/v1/calendar/active')
+    apiFetch('/api/v1/calendar/active')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.calendar) {
@@ -193,7 +194,7 @@ export const PujaDatePage: React.FC = () => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const res = await fetch('/api/v1/upload', {
+      const res = await apiFetch('/api/v1/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -229,7 +230,7 @@ export const PujaDatePage: React.FC = () => {
 
     setIsSubmittingProfile(true);
     try {
-      const res = await fetch('/api/v1/dating/profile', {
+      const res = await apiFetch('/api/v1/dating/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -269,7 +270,7 @@ export const PujaDatePage: React.FC = () => {
     }
 
     try {
-      const res = await fetch('/api/v1/chat/conversations', {
+      const res = await apiFetch('/api/v1/chat/conversations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +302,7 @@ export const PujaDatePage: React.FC = () => {
     setSentVibes((prev) => new Set(prev).add(targetUserId));
 
     try {
-      const res = await fetch('/api/v1/dating/like', {
+      const res = await apiFetch('/api/v1/dating/like', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -331,7 +332,7 @@ export const PujaDatePage: React.FC = () => {
   const handleUnlockUnlimitedChat = async () => {
     setPaymentLoading(true);
     try {
-      const orderRes = await fetch('/api/v1/payments/order', {
+      const orderRes = await apiFetch('/api/v1/payments/order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

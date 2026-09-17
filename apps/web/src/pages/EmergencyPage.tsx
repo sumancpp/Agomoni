@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { useMusicPlayer } from '../context/MusicPlayerContext';
 import FestiveButton from '../components/common/FestiveButton';
+import { apiFetch } from '../lib/api';
 
 interface Helpline {
   name: string;
@@ -40,7 +41,7 @@ export const EmergencyPage: React.FC = () => {
     // Automatically pause music when entering Emergency as specified
     pauseForEmergency();
 
-    fetch('/api/v1/emergency/directory')
+    apiFetch('/api/v1/emergency/directory')
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -56,7 +57,7 @@ export const EmergencyPage: React.FC = () => {
 
   const fetchUserContacts = async () => {
     try {
-      const res = await fetch('/api/v1/emergency/contacts', {
+      const res = await apiFetch('/api/v1/emergency/contacts', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -91,7 +92,7 @@ export const EmergencyPage: React.FC = () => {
     if (!token) return;
 
     try {
-      const res = await fetch('/api/v1/emergency/contacts', {
+      const res = await apiFetch('/api/v1/emergency/contacts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { completePayment } from '../lib/payments';
+import { apiFetch } from '../lib/api';
 
 interface Post {
   id: string;
@@ -115,7 +116,7 @@ export const LostFoundPage: React.FC = () => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const res = await fetch('/api/v1/upload', {
+      const res = await apiFetch('/api/v1/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -217,7 +218,7 @@ export const LostFoundPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/v1/lost-found', {
+      const res = await apiFetch('/api/v1/lost-found', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -319,7 +320,7 @@ export const LostFoundPage: React.FC = () => {
     if (!contactTarget || !token) return;
     setIsPayingContact(true);
     try {
-      const orderRes = await fetch('/api/v1/payments/order', {
+      const orderRes = await apiFetch('/api/v1/payments/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
