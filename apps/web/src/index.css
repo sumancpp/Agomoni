@@ -1,0 +1,238 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-night: #120909;
+    --color-maroon-dark: #2A0B0B;
+    --color-maroon: #4A1010;
+    --color-sindoor: #B51218;
+    --color-gold: #D4AF37;
+    --color-gold-warm: #E7C766;
+    --color-cream: #F5E6C8;
+    --color-white-warm: #FFF8EC;
+  }
+
+  html, body {
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    background-color: #120909;
+    color: #FFF8EC;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Bengali typography enhancements */
+  [lang="bn"], .bengali-text {
+    font-family: 'Noto Serif Bengali', serif;
+  }
+
+  /* Custom antique gold & deep maroon festival scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #120909;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #4A1010;
+    border-radius: 9999px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #B51218;
+    border-color: #D4AF37;
+  }
+}
+
+/* WhatsApp / Modern Chat Scrollbar (Thin, smooth, unobtrusive) */
+.chat-scrollbar,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.25) transparent;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-scrollbar::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.chat-scrollbar:hover::-webkit-scrollbar-thumb,
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.45);
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:active,
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #D4AF37;
+}
+
+/* Atmospheric Festive & Cultural Styles */
+.puja-glow {
+  box-shadow: 0 0 35px -5px rgba(212, 175, 55, 0.35), 0 0 20px -8px rgba(181, 18, 24, 0.5);
+}
+
+.puja-glow-gold {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.35);
+}
+
+.puja-glow-sindoor {
+  box-shadow: 0 0 25px rgba(181, 18, 24, 0.45);
+}
+
+/* Cultural Festival Card: Deep Maroon + Antique Gold Accents */
+.puja-card {
+  background: rgba(42, 11, 11, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), inset 0 1px 1px 0 rgba(231, 199, 102, 0.15);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.puja-card:hover {
+  background: rgba(74, 16, 16, 0.55);
+  border-color: rgba(212, 175, 55, 0.55);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.85), 0 0 30px -5px rgba(212, 175, 55, 0.25), inset 0 1px 1px 0 rgba(255, 248, 236, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Ornate Traditional Festival Card with Gold Border */
+.puja-card-ornate {
+  background: radial-gradient(circle at top, rgba(74, 16, 16, 0.6) 0%, rgba(18, 9, 9, 0.85) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.75), inset 0 0 15px rgba(212, 175, 55, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+/* Reusable Deep Maroon Frosted Glass Panels */
+.ios-glass {
+  background: rgba(18, 9, 9, 0.75);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 1px 0 rgba(212, 175, 55, 0.12);
+}
+
+.ios-glass-pill {
+  background: rgba(42, 11, 11, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(231, 199, 102, 0.15);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FFF8EC 0%, #E7C766 40%, #D4AF37 75%, #94741B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sindoor-gradient-text {
+  background: linear-gradient(135deg, #FFC9C9 0%, #D1261F 45%, #B51218 80%, #6B090E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle particle canvas styling */
+.puja-particles-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* Custom Festive Scanner & Try-On Animations */
+@keyframes scanner-move {
+  0% {
+    top: 2%;
+    opacity: 0.7;
+  }
+  50% {
+    top: 94%;
+    opacity: 1;
+  }
+  100% {
+    top: 2%;
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.animate-scanner {
+  animation: scanner-move 2.2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.5s ease-in-out infinite;
+}
+
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Modal Open: Disappear Nav, Footer, Bottom Nav, and Floating Player */
+body.hide-nav-footer header,
+body.hide-nav-footer footer,
+body.hide-nav-footer nav,
+body.hide-nav-footer .bottom-nav,
+body.hide-nav-footer [data-global-nav],
+body.hide-nav-footer [data-global-footer],
+body.hide-nav-footer .mini-music-player {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

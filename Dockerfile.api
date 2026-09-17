@@ -1,0 +1,39 @@
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+
+RUN npm install
+
+COPY apps/api ./apps/api
+
+WORKDIR /app/apps/api
+RUN npx prisma generate --schema=src/prisma/schema.prisma
+RUN npm run build
+
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=4000
+
+COPY package.json ./
+COPY apps/api/package.json ./apps/api/
+
+RUN npm install --omit=dev --workspace=@agomoni/api
+
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/src/prisma ./apps/api/src/prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+WORKDIR /app/apps/api
+RUN mkdir -p uploads
+
+EXPOSE 4000
+
+CMD ["node", "dist/server.js"]

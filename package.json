@@ -1,0 +1,37 @@
+{
+  "name": "agomoni",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agomoni — Complete Digital Durga Puja Companion (PWA)",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web & npm run dev --workspace=apps/api",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "test": "npm run test --workspace=apps/api",
+    "db:generate": "npm run db:generate --workspace=apps/api",
+    "db:push": "npm run db:push --workspace=apps/api",
+    "db:seed": "npm run db:seed --workspace=apps/api"
+  },
+  "keywords": [
+    "durga-puja",
+    "bengali",
+    "pwa",
+    "social",
+    "dating",
+    "lost-and-found",
+    "ai-outfit",
+    "emergency",
+    "music-player"
+  ],
+  "author": "Agomoni Team",
+  "license": "MIT",
+  "devDependencies": {
+    "puppeteer-core": "^25.10.0"
+  }
+}

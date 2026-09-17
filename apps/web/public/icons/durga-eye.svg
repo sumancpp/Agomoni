@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#8B0000" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF3B0" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#997A15" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer aura ring -->
+  <circle cx="50" cy="50" r="48" fill="#0E0C0D" stroke="url(#goldGrad)" stroke-width="1.5" />
+  
+  <!-- Traditional Trinetra (Third Eye on Forehead) -->
+  <path d="M 50 20 Q 56 30 50 40 Q 44 30 50 20 Z" fill="#E03131" stroke="url(#goldGrad)" stroke-width="1" />
+  <circle cx="50" cy="30" r="2.5" fill="#FFF3B0" />
+  
+  <!-- Left Majestic Eye -->
+  <path d="M 16 54 C 24 40, 42 40, 48 54 C 42 66, 24 66, 16 54 Z" fill="#FFFDF7" stroke="#0E0C0D" stroke-width="1.5" />
+  <circle cx="34" cy="53" r="6" fill="#0E0C0D" />
+  <circle cx="36" cy="51" r="2" fill="#FFFFFF" />
+  <!-- Eyelash extension -->
+  <path d="M 16 54 Q 10 50 6 52" stroke="#0E0C0D" stroke-width="1.5" stroke-linecap="round" />
+  
+  <!-- Right Majestic Eye -->
+  <path d="M 52 54 C 58 40, 76 40, 84 54 C 76 66, 58 66, 52 54 Z" fill="#FFFDF7" stroke="#0E0C0D" stroke-width="1.5" />
+  <circle cx="66" cy="53" r="6" fill="#0E0C0D" />
+  <circle cx="68" cy="51" r="2" fill="#FFFFFF" />
+  <!-- Eyelash extension -->
+  <path d="M 84 54 Q 90 50 94 52" stroke="#0E0C0D" stroke-width="1.5" stroke-linecap="round" />
+
+  <!-- Chandon / Sandalwood Alpona dots on forehead -->
+  <circle cx="38" cy="38" r="1.5" fill="#FFF3B0" />
+  <circle cx="44" cy="35" r="1.5" fill="#FFF3B0" />
+  <circle cx="56" cy="35" r="1.5" fill="#FFF3B0" />
+  <circle cx="62" cy="38" r="1.5" fill="#FFF3B0" />
+
+  <!-- Traditional Sindoor Bindi -->
+  <circle cx="50" cy="46" r="3.5" fill="#A91D22" />
+  
+  <!-- Sacred Nath (Nose Ring) curve hint -->
+  <path d="M 50 64 A 10 10 0 0 0 54 82" stroke="url(#goldGrad)" stroke-width="1.2" fill="none" stroke-linecap="round" />
+  <circle cx="54" cy="82" r="1.5" fill="#FF4D4D" />
+</svg>

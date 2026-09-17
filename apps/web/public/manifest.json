@@ -1,0 +1,19 @@
+{
+  "name": "Agomoni — আগমনী | Digital Durga Puja Companion",
+  "short_name": "Agomoni",
+  "description": "এই পুজোয়, কিছু মানুষ আপন হোক। Celebrate. Connect. Remember. Stay Safe.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0E0C0D",
+  "theme_color": "#8B0000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/durga-eye.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "social", "festivals", "entertainment"]
+}

@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: agomoni-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agomoni_user
+      POSTGRES_PASSWORD: agomoni_secure_password_2026
+      POSTGRES_DB: agomoni_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agomoni_user -d agomoni_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: agomoni-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: agomoni-api
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://agomoni_user:agomoni_secure_password_2026@postgres:5432/agomoni_db?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "agomoni_production_jwt_secret_must_be_changed"
+      JWT_REFRESH_SECRET: "agomoni_production_refresh_secret_must_be_changed"
+      RAZORPAY_KEY_ID: "rzp_test_agomoni_sample_key"
+      RAZORPAY_KEY_SECRET: "rzp_test_agomoni_sample_secret"
+      RAZORPAY_WEBHOOK_SECRET: "rzp_webhook_secret_dev"
+      CLIENT_URL: "http://localhost:80"
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - api-uploads:/app/apps/api/uploads
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: agomoni-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:
+  api-uploads:

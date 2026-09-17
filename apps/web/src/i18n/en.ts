@@ -1,0 +1,137 @@
+export const en = {
+  brand: 'AGOMONI',
+  tagline: 'Celebrate. Connect. Remember. Stay Safe.',
+  subTagline: 'Maa is coming...',
+  englishTagline: 'Celebrate. Connect. Remember. Stay Safe.',
+  
+  nav: {
+    home: 'Home',
+    pujaDate: 'Puja Date',
+    lostFound: 'Lost & Found',
+    outfit: 'Outfit Generator',
+    memories: 'Memories',
+    emergency: 'Emergency',
+    songs: 'Puja Songs',
+    profile: 'Profile',
+    admin: 'Admin',
+    login: 'Login',
+    register: 'Register',
+    logout: 'Logout',
+  },
+
+  hero: {
+    title: 'AGOMONI',
+    subtitle: 'Step into the divine rhythm, autumnal flowers, and sacred festive nights...',
+    countdownPrefix: 'Only',
+    days: 'Days Until Durga Puja',
+    enterPujaMode: '✨ Enter Puja Mode',
+    pujaModeActive: '🌸 Puja Mode Active',
+    listenPujaSong: '🎵 Play Songs',
+  },
+
+  features: {
+    title: 'Six Festive Pillars',
+    subtitle: 'A modern digital sanctuary for celebration, bonding, memory, and safety',
+    pujaDate: {
+      title: 'Puja Date ❤️',
+      desc: 'Connect with someone special who shares your Puja day & pandal hopping vibe. 18+ verified.',
+      cta: 'Explore Matches',
+    },
+    lostFound: {
+      title: 'Lost & Found 🧒',
+      desc: 'Report lost loved ones or items in pandal crowds. Instant match notifications. Safe & verified.',
+      cta: 'View Reports',
+    },
+    outfit: {
+      title: 'Outfit Generator 👗',
+      desc: 'AI festive transformation: from traditional Gorod silk to modern pandal fusion styling.',
+      cta: 'Generate Outfit',
+    },
+    memories: {
+      title: 'Memory Capsule 📦',
+      desc: 'Your private digital diary from Mahalaya to Dashami. Photo logs, moods, and stories.',
+      cta: 'Add Memory',
+    },
+    emergency: {
+      title: 'Puja Emergency 🚨',
+      desc: 'One-tap access to nearest police, hospital, pandal helpdesks, and private emergency contacts.',
+      cta: 'Emergency Access',
+    },
+    songs: {
+      title: 'Puja Songs 🎵',
+      desc: 'Continuous festive soundtrack—from Mahalaya hymns to Dhunuchi Dhak beats.',
+      cta: 'Open Music',
+    },
+  },
+
+  pujaDate: {
+    safetyWarning: '⚠️ Safety First: Puja Date is strictly 18+. Never send money to strangers. Always meet in crowded public pandals or cafes.',
+    vibeMatch: 'Vibe Match',
+    filterDays: 'Puja Days',
+    filterTimes: 'Time Slots',
+    sendLike: '❤️ Send Vibe',
+    message: '💬 Message',
+    freeChatsNotice: 'You have 3 free chats available.',
+    unlockUnlimited: 'Unlock Unlimited Chat — ₹49',
+    emptyTitle: 'No matches found for your vibe yet ❤️',
+    emptyDesc: 'New festive seekers matching your preferences are joining shortly.',
+    createProfileBtn: '+ Create Your Profile',
+    editProfileBtn: 'Edit My Schedule & Profile',
+    profileModalTitle: 'Create Your Puja Date Profile',
+    profileModalSubtitle: 'Find someone to hop pandals with on the exact days and times you will be alone.',
+    daysAloneLabel: 'Which days in Puja will you be alone?',
+    timeSlotsLabel: 'Which time slots are you free?',
+    locationLabel: 'Your Location / Pandal Area',
+    uploadPhotoPrompt: 'Upload Profile Picture from Device',
+    saveProfileBtn: 'Save Profile & Start Matching',
+    activeProfileBanner: 'Your Puja Date Profile is Active',
+    notActiveBannerTitle: "You haven't joined Puja Date yet",
+    notActiveBannerDesc: 'Simply logging in does not show you here. Create your companion profile to find people free at the exact same days & times.',
+  },
+
+  lostFound: {
+    heading: 'Find Loved Ones & Items',
+    tabPerson: 'Lost Person',
+    tabItem: 'Lost Item',
+    createBtn: '+ Create New Report (Free)',
+    possibleMatch: 'Possible Match Detected!',
+    emptyNotice: 'We hope nobody gets lost. But if someone does, we are here. ❤️',
+    contactPoster: 'Contact Reporter (₹49)',
+  },
+
+  outfit: {
+    heading: 'AI Puja Outfit Generator',
+    subheading: 'Blend timeless heritage with contemporary flair for your Puja looks',
+    freeLeft: 'free generations left',
+    unlockUnlimited: 'Unlock Unlimited — ₹29',
+    uploadPrompt: 'Upload Your Photo',
+    generateBtn: 'Generate Puja Outfit ✨',
+    tipsTitle: 'Puja Styling Insights',
+  },
+
+  memory: {
+    heading: 'Memory Capsule — My Puja 2026',
+    subheading: 'Preserve the golden moments of celebration and pandal hopping',
+    addBtn: '+ Add New Memory',
+    emptyNotice: 'Add your first Puja memory 📸',
+    shareBtn: 'Share',
+    makePublic: 'Create Share Link',
+    makePrivate: 'Make Private',
+  },
+
+  emergency: {
+    heading: 'Puja Emergency & Safety',
+    subheading: 'Keep celebration joyful and secure. Rapid access when you need it.',
+    pauseMusic: '🔇 Mute Music',
+    nationalHelplines: 'National Helplines',
+    localHospitalsPolice: 'Nearby Police & Hospitals',
+    myContacts: 'My Emergency Contacts',
+    addContact: '+ Add Contact',
+  },
+
+  musicPlayer: {
+    nowPlaying: 'Now Playing',
+    queue: 'Playlist Queue',
+    ambientNotice: 'Original ambient audio streams persistently across pages.',
+  },
+};

@@ -1,0 +1,400 @@
+// Agomoni Prisma Schema
+// Supports both PostgreSQL (production) and SQLite (local dev & testing)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  phone           String?
+  passwordHash    String
+  googleId        String?        @unique
+  role            String         @default("USER") // USER, MODERATOR, ADMIN, SUPER_ADMIN
+  isVerified      Boolean        @default(false)
+  dateOfBirth     DateTime       // Required for strict server-side 18+ verification
+  gender          String         // MALE, FEMALE, NON_BINARY, OTHER
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  profile         Profile?
+  availabilities  PujaAvailability[]
+  userInterests   UserInterest[]
+  sentMatches     Match[]        @relation("MatchRequester")
+  receivedMatches Match[]        @relation("MatchReceiver")
+  participations  ConversationParticipant[]
+  sentMessages    Message[]
+  blockedUsers    Block[]        @relation("Blocker")
+  blockedBy       Block[]        @relation("BlockedUser")
+  submittedReports Report[]      @relation("Reporter")
+  receivedReports  Report[]      @relation("ReportedUser")
+  lostFoundPosts  LostFoundPost[]
+  entitlements    Entitlement[]
+  payments        Payment[]
+  outfitGenerations OutfitGeneration[]
+  memoryCapsules  MemoryCapsule[]
+  emergencyContacts EmergencyContact[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  adminActions    AdminAction[]
+}
+
+model Profile {
+  id              String         @id @default(uuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  bio             String?
+  avatarUrl       String?
+  locationCity    String         // Approximate city/neighborhood (e.g. "Durgapur", "Salt Lake, Kolkata")
+  locationLat     Float?         // Approximate coordinate (never exposed raw to users)
+  locationLng     Float?         // Approximate coordinate (never exposed raw to users)
+  preferredGender String?        // ANY, MALE, FEMALE, OTHER
+  preferredMinAge Int            @default(18)
+  preferredMaxAge Int            @default(50)
+  preferredDistanceKm Int        @default(25)
+  hideProfile     Boolean        @default(false)
+  isMatchingActive Boolean       @default(false)
+  hasPujaDateProfile Boolean     @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model PujaAvailability {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pujaDay         String         // SHASHTI, SAPTAMI, ASHTAMI, NABAMI, DASHAMI
+  timeSlot        String         // MORNING, AFTERNOON, EVENING, NIGHT, ALL_DAY, WHOLE_NIGHT
+  createdAt       DateTime       @default(now())
+
+  @@unique([userId, pujaDay, timeSlot])
+}
+
+model Interest {
+  id              String         @id @default(uuid())
+  name            String         @unique // Food, Photography, Music, Movies, Travel, Pandal hopping, etc.
+  nameBengali     String
+  icon            String?
+  users           UserInterest[]
+}
+
+model UserInterest {
+  id              String         @id @default(uuid())
+  userId          String
+  interestId      String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interest        Interest       @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, interestId])
+}
+
+model Match {
+  id              String         @id @default(uuid())
+  requesterId     String
+  receiverId      String
+  status          String         @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  vibeScore       Int            @default(0)         // Calculated 0-100%
+  matchReasons    String?        // JSON string of match highlights
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  requester       User           @relation("MatchRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiver        User           @relation("MatchReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, receiverId])
+}
+
+model Conversation {
+  id              String         @id @default(uuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  lastMessageAt   DateTime       @default(now())
+
+  participants    ConversationParticipant[]
+  messages        Message[]
+}
+
+model ConversationParticipant {
+  id              String         @id @default(uuid())
+  conversationId  String
+  userId          String
+  unreadCount     Int            @default(0)
+  isUnlockedFree  Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id              String         @id @default(uuid())
+  conversationId  String
+  senderId        String
+  content         String
+  status          String         @default("SENT") // SENT, DELIVERED, READ
+  isDeletedBySender Boolean      @default(false)
+  createdAt       DateTime       @default(now())
+
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender          User           @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Block {
+  id              String         @id @default(uuid())
+  blockerId       String
+  blockedUserId   String
+  createdAt       DateTime       @default(now())
+
+  blocker         User           @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedUser     User           @relation("BlockedUser", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedUserId])
+}
+
+model Report {
+  id              String         @id @default(uuid())
+  reporterId      String
+  reportedUserId  String
+  targetType      String         // USER, CHAT, LOST_FOUND
+  targetId        String?
+  reason          String         // Harassment, Spam, Fake profile, Scam, etc.
+  details         String?
+  status          String         @default("PENDING") // PENDING, REVIEWED, RESOLVED, DISMISSED
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  reporter        User           @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser    User           @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+}
+
+model LostFoundPost {
+  id              String         @id @default(uuid())
+  userId          String
+  category        String         // LOST_PERSON, LOST_ITEM
+  title           String
+  nameOrItem      String
+  age             Int?
+  gender          String?
+  description     String
+  lastSeenArea    String
+  lastSeenDate    DateTime
+  lastSeenTime    String?        // Morning, Evening, or specific time
+  photoUrl        String?
+  contactMethod   String?        // Masked in-app or relay
+  status          String         @default("PENDING_PAYMENT") // PENDING_PAYMENT, ACTIVE, EXPIRED, RESOLVED, REMOVED
+  isPaid          Boolean        @default(false)
+  expiresAt       DateTime
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchesAsSource LostFoundMatch[] @relation("SourceMatches")
+  matchesAsTarget LostFoundMatch[] @relation("TargetMatches")
+}
+
+model LostFoundMatch {
+  id              String         @id @default(uuid())
+  postAId         String
+  postBId         String
+  matchConfidence Int            // 0 - 100
+  matchDetails    String?        // Explanation of possible overlap
+  status          String         @default("SUGGESTED") // SUGGESTED, CONFIRMED, REJECTED
+  createdAt       DateTime       @default(now())
+
+  postA           LostFoundPost  @relation("SourceMatches", fields: [postAId], references: [id], onDelete: Cascade)
+  postB           LostFoundPost  @relation("TargetMatches", fields: [postBId], references: [id], onDelete: Cascade)
+
+  @@unique([postAId, postBId])
+}
+
+model Payment {
+  id              String         @id @default(uuid())
+  userId          String
+  productId       String         // PUJA_DATE_UNLIMITED_CHAT, LOST_FOUND_POST, OUTFIT_UNLIMITED
+  amount          Int            // in INR Paise (e.g. 4900 for ₹49, 2900 for ₹29)
+  currency        String         @default("INR")
+  provider        String         @default("RAZORPAY")
+  orderId         String         @unique
+  paymentId       String?        @unique
+  signature       String?
+  status          String         @default("CREATED") // CREATED, PAID, FAILED, REFUNDED
+  metadata        String?        // JSON string
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events          PaymentEvent[]
+  entitlement     Entitlement?
+}
+
+model PaymentEvent {
+  id              String         @id @default(uuid())
+  paymentId       String
+  eventType       String         // order.created, payment.captured, payment.failed
+  payload         String         // Raw JSON payload
+  createdAt       DateTime       @default(now())
+
+  payment         Payment        @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+model Entitlement {
+  id              String         @id @default(uuid())
+  userId          String
+  productType     String         // PUJA_DATE_UNLIMITED_CHAT, OUTFIT_UNLIMITED, LOST_FOUND_POST
+  active          Boolean        @default(true)
+  grantedAt       DateTime       @default(now())
+  paymentId       String?        @unique
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment         Payment?       @relation(fields: [paymentId], references: [id])
+
+  @@unique([userId, productType])
+}
+
+model OutfitGeneration {
+  id              String         @id @default(uuid())
+  userId          String
+  inputImageUrl   String
+  resultImageUrl  String
+  gender          String
+  style           String         // Traditional, Modern, Bengali Traditional, Elegant, Casual Puja, Ashtami Special, Night Puja, Family Puja
+  pujaDay         String         // Shashti, Saptami, Ashtami, Nabami, Dashami
+  prompt          String?
+  aiProvider      String         @default("DEVELOPMENT_MOCK")
+  status          String         @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  createdAt       DateTime       @default(now())
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MemoryCapsule {
+  id              String         @id @default(uuid())
+  userId          String
+  title           String
+  pujaDay         String         // Mahalaya, Shashti, Saptami, Ashtami, Nabami, Dashami
+  mediaUrls       String         // JSON array of photo/video URLs
+  note            String?
+  mood            String?        // Festive, Emotional, Joyful, Nostalgic, Excited, Serene
+  locationName    String?
+  isPublic        Boolean        @default(false)
+  shareToken      String?        @unique // Unguessable random ID for link sharing
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyContact {
+  id              String         @id @default(uuid())
+  userId          String
+  name            String
+  relationship    String
+  phoneNumber     String
+  createdAt       DateTime       @default(now())
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyResource {
+  id              String         @id @default(uuid())
+  title           String         // Police Control Room, SSKM Hospital, Central Puja Helpdesk, etc.
+  category        String         // POLICE, HOSPITAL, PUJA_HELPDESK, FIRE, AMBULANCE
+  phoneNumber     String
+  address         String?
+  city            String         @default("Kolkata & Bengal")
+  isVerified      Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+}
+
+model Notification {
+  id              String         @id @default(uuid())
+  userId          String
+  title           String
+  message         String
+  type            String         // MATCH, CHAT, LOST_FOUND, PAYMENT, OUTFIT, SECURITY
+  targetUrl       String?
+  isRead          Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PujaCalendar {
+  id              String         @id @default(uuid())
+  year            Int            @unique
+  mahalayaDate    DateTime
+  shashtiDate     DateTime
+  saptamiDate     DateTime
+  ashtamiDate     DateTime
+  nabamiDate      DateTime
+  dashamiDate     DateTime
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model MusicTrack {
+  id              String         @id @default(uuid())
+  playlistId      String?
+  title           String
+  artist          String
+  category        String         // AGOMONI, MAHALAYA, DHAK, PUJA_SONGS, AMBIENT
+  provider        String         // ORIGINAL, YOUTUBE_EMBED, SPOTIFY_EMBED
+  embedUrl        String?        // Trusted YouTube / Spotify embed URL
+  sourceUrl       String?        // Audio mp3/ogg or public streaming stream
+  artworkUrl      String?
+  durationSeconds Int            @default(180)
+  orderIndex      Int            @default(0)
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  playlist        MusicPlaylist? @relation(fields: [playlistId], references: [id], onDelete: SetNull)
+}
+
+model MusicPlaylist {
+  id              String         @id @default(uuid())
+  name            String
+  nameBengali     String?
+  description     String?
+  coverImage      String?
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  tracks          MusicTrack[]
+}
+
+model AdminAction {
+  id              String         @id @default(uuid())
+  adminId         String
+  actionType      String         // BAN_USER, REMOVE_POST, RESOLVE_REPORT, UPDATE_CALENDAR
+  targetEntity    String
+  targetId        String
+  details         String?
+  createdAt       DateTime       @default(now())
+
+  admin           User           @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id              String         @id @default(uuid())
+  userId          String?
+  eventType       String         // AUTH_LOGIN, PAYMENT_ORDER, SECURITY_BLOCK, etc.
+  ipAddress       String?
+  userAgent       String?
+  metadata        String?
+  createdAt       DateTime       @default(now())
+
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" translate="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="google" content="notranslate" />
+    <link rel="icon" type="image/svg+xml" href="/icons/durga-eye.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0E0C0D" />
+    <meta name="description" content="আগমনী — এই পুজোয়, কিছু মানুষ আপন হোক। Celebrate. Connect. Remember. Stay Safe. A digital Durga Puja companion PWA." />
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Agomoni" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <!-- OpenGraph / Twitter Cards -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="🌺 AGOMONI — আগমনী" />
+    <meta property="og:description" content="এই পুজোয়, কিছু মানুষ আপন হোক। Celebrate. Connect. Remember. Stay Safe." />
+    <meta property="og:image" content="/icons/og-preview.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Noto Serif Bengali, Cinzel, Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#0E0C0D] text-cream-100 font-sans antialiased selection:bg-sindoor-700 selection:text-white min-h-screen">
+    <div id="root" class="relative min-h-screen flex flex-col"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Service Worker management: prevent stale caching in local development
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        const isLocalhost = Boolean(
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '[::1]' ||
+          window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+        );
+
+        if (isLocalhost) {
+          // In development (npm run dev), actively remove all service workers and flush cache storage
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+              registration.unregister();
+            }
+          });
+          if ('caches' in window) {
+            caches.keys().then((keys) => {
+              for (const key of keys) {
+                caches.delete(key);
+              }
+            });
+          }
+        } else {
+          // In production, register PWA service worker
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(() => {
+              // Service worker registration error handled silently in client
+            });
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
