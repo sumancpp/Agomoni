@@ -99,6 +99,9 @@ export const Navbar: React.FC = () => {
       const res = await apiFetch('/api/v1/notifications', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401 || res.status === 403) {
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setNotifications(data.notifications || []);
