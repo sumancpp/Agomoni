@@ -184,8 +184,9 @@ def try_faceswap_restoration(source_path: str, template_path: str, output_path: 
             dest_img=handle_file(template_path),
             api_name='/swap_faces'
         )
-        if res and os.path.exists(res):
-            if save_image_result(res, output_path):
+        res_file = res.get('path') if isinstance(res, dict) else res
+        if res_file and isinstance(res_file, str) and os.path.exists(res_file):
+            if save_image_result(res_file, output_path):
                 print(f"[BengaliStylist] SUCCESS with CodeFormer Face Swap: Saved to {output_path}")
                 return True
     except Exception as e:
