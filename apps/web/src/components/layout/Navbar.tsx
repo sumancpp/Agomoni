@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, Globe, User, Menu, X, ShieldAlert, Music, Bell, CheckCheck, Sparkles, Home, Search, Shirt, BookHeart, LogIn } from 'lucide-react';
+import { Heart, Globe, User, Menu, X, ShieldAlert, Music, Bell, CheckCheck, Sparkles, Home, Search, BookHeart, LogIn } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -88,7 +88,6 @@ export const Navbar: React.FC = () => {
     { to: '/', label: t.nav.home, icon: Home },
     { to: '/puja-date', label: t.nav.pujaDate, icon: Heart },
     { to: '/lost-found', label: t.nav.lostFound, icon: Search },
-    { to: '/outfit', label: t.nav.outfit, icon: Shirt },
     { to: '/memories', label: t.nav.memories, icon: BookHeart },
     { to: '/songs', label: t.nav.songs, icon: Music },
   ];

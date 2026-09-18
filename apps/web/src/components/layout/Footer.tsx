@@ -46,7 +46,6 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs text-cream-300">
               <li><Link to="/puja-date" className="hover:text-gold-300 transition-colors">🌸 Puja Date (18+)</Link></li>
               <li><Link to="/lost-found" className="hover:text-gold-300 transition-colors">🧒 Lost & Found (নিরাপত্তা)</Link></li>
-              <li><Link to="/outfit" className="hover:text-gold-300 transition-colors">👗 AI Outfit Generator</Link></li>
               <li><Link to="/memories" className="hover:text-gold-300 transition-colors">📦 Memory Capsule</Link></li>
               <li><Link to="/songs" className="hover:text-gold-300 transition-colors">🎵 Puja Songs Room</Link></li>
             </ul>

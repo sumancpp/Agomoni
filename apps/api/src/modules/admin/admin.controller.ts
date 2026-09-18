@@ -16,7 +16,6 @@ router.get('/analytics', async (req: AuthenticatedRequest, res: Response, next) 
       revenueResult,
       activeLostFound,
       totalConversations,
-      totalOutfitGenerations,
       pendingReports,
     ] = await Promise.all([
       prisma.user.count({ where: { deletedAt: null } }),
@@ -27,7 +26,6 @@ router.get('/analytics', async (req: AuthenticatedRequest, res: Response, next) 
       }),
       prisma.lostFoundPost.count({ where: { status: 'ACTIVE' } }),
       prisma.conversation.count(),
-      prisma.outfitGeneration.count({ where: { status: 'COMPLETED' } }),
       prisma.report.count({ where: { status: 'PENDING' } }),
     ]);
 
@@ -41,7 +39,6 @@ router.get('/analytics', async (req: AuthenticatedRequest, res: Response, next) 
         totalRevenueRupees,
         activeLostFound,
         totalConversations,
-        totalOutfitGenerations,
         pendingReports,
       },
     });

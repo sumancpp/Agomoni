@@ -426,26 +426,6 @@ export const HomePage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Card 3: AI Outfit Generator */}
-          <div className="puja-card p-6 rounded-3xl space-y-4 flex flex-col justify-between group border-gold-500/20 bg-gradient-to-b from-[#2A0B0B]/50 to-[#140808]/70">
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#3D142A]/60 border border-gold-500/30 flex items-center justify-center text-2xl group-hover:scale-105 transition-transform">
-                👗
-              </div>
-              <h3 className="text-xl font-bold text-[#FFF8EC] font-cinzel">
-                {t.features.outfit.title}
-              </h3>
-              <p className="text-xs text-cream-300 leading-relaxed font-bengali">
-                {t.features.outfit.desc}
-              </p>
-            </div>
-            <Link to="/outfit">
-              <FestiveButton variant="secondary" size="sm" className="w-full gap-2">
-                <span className="font-bengali">{t.features.outfit.cta}</span>
-                <ArrowRight size={14} />
-              </FestiveButton>
-            </Link>
-          </div>
 
           {/* Card 4: Memory Capsule */}
           <div className="puja-card p-6 rounded-3xl space-y-4 flex flex-col justify-between group border-gold-500/20 bg-gradient-to-b from-[#2A0B0B]/50 to-[#140808]/70">

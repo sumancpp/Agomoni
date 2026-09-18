@@ -376,17 +376,6 @@ export const AdminPage: React.FC = () => {
               <p className="text-[11px] text-cream-400">Active dating chat threads</p>
             </div>
 
-            <div className="puja-card p-5 rounded-2xl space-y-1.5 border border-gold-500/20 bg-night-900/60">
-              <div className="flex items-center justify-between text-cream-400 text-xs">
-                <span className="font-semibold uppercase tracking-wider">AI Outfit Generations</span>
-                <Package size={16} className="text-gold-400" />
-              </div>
-              <p className="text-3xl font-extrabold text-cream-100 font-cinzel">
-                {analytics?.totalOutfitGenerations ?? 0}
-              </p>
-              <p className="text-[11px] text-cream-400">Neural styling photos rendered</p>
-            </div>
-
             <div className="puja-card p-5 rounded-2xl space-y-1.5 border border-red-500/30 bg-night-900/60">
               <div className="flex items-center justify-between text-cream-400 text-xs">
                 <span className="font-semibold uppercase tracking-wider">Moderation Queue</span>
@@ -562,7 +551,7 @@ export const AdminPage: React.FC = () => {
                 Live Transactions & Payment Records
               </h3>
               <p className="text-xs text-cream-400">
-                Detailed record of all Razorpay payments for Puja Date chat, Lost & Found listings, and AI Outfits.
+                Detailed record of all Razorpay payments for Puja Date chat and Lost & Found listings.
               </p>
             </div>
             <span className="text-xs font-mono text-emerald-400 bg-night-900 px-3 py-1 rounded-xl border border-emerald-500/20">

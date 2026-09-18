@@ -14,7 +14,6 @@ import datingRouter from './modules/dating/dating.controller.js';
 import chatRouter from './modules/chat/chat.controller.js';
 import paymentsRouter from './modules/payments/payments.controller.js';
 import lostFoundRouter from './modules/lost-found/lost-found.controller.js';
-import outfitRouter from './modules/outfit/outfit.controller.js';
 import memoryRouter from './modules/memory/memory.controller.js';
 import emergencyRouter from './modules/emergency/emergency.controller.js';
 import musicRouter from './modules/music/music.controller.js';
@@ -116,8 +115,6 @@ const candidateUploadDirs = [
   path.resolve(process.cwd(), 'uploads'),
   path.resolve(__dirname, '../../uploads'),
   path.resolve(__dirname, '../../../uploads'),
-  path.resolve(process.cwd(), 'uploads/outfits'),
-  path.resolve(process.cwd(), 'apps/api/uploads/outfits'),
 ];
 
 const primaryUploadsDir = candidateUploadDirs[0];
@@ -138,17 +135,6 @@ app.get('/uploads/:filename', (req, res) => {
     const fullPath = path.resolve(dir, filename);
     if (fs.existsSync(fullPath)) {
       return res.sendFile(fullPath);
-    }
-  }
-
-  // Graceful fallback for historical festive/AI outfit files on ephemeral cloud restarts
-  if (filename.includes('agomoni-festive-') || filename.includes('agomoni-ai-') || filename.includes('agomoni-stylist-')) {
-    const isMale = filename.toLowerCase().includes('male');
-    for (const dir of candidateUploadDirs) {
-      const template = path.resolve(dir, isMale ? 'male-traditional.jpg' : 'female-traditional.jpg');
-      if (fs.existsSync(template)) return res.sendFile(template);
-      const nested = path.resolve(dir, isMale ? 'outfits/male-traditional.jpg' : 'outfits/female-traditional.jpg');
-      if (fs.existsSync(nested)) return res.sendFile(nested);
     }
   }
 
@@ -202,7 +188,6 @@ app.use('/api/v1/dating', datingRouter);
 app.use('/api/v1/chat', chatRouter);
 app.use('/api/v1/payments', paymentsRouter);
 app.use('/api/v1/lost-found', lostFoundRouter);
-app.use('/api/v1/outfit', outfitRouter);
 app.use('/api/v1/memories', memoryRouter);
 app.use('/api/v1/emergency', emergencyRouter);
 app.use('/api/v1/music', musicRouter);

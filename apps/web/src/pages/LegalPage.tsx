@@ -91,7 +91,7 @@ export const LegalPage: React.FC = () => {
             <ul className="list-disc list-inside space-y-2 pl-2">
               <li>You agree to provide accurate registration information and acknowledge the 18+ requirement for dating interactions.</li>
               <li>You agree not to post defamatory, obscene, harassing, or fraudulent content.</li>
-              <li>All digital entitlements (e.g. ₹49 Unlimited Chat, ₹29 Lost & Found Post, ₹29 Outfit Unlimited) are non-refundable once activated and verified on our servers.</li>
+              <li>All digital entitlements (e.g. ₹49 Unlimited Chat, ₹29 Lost & Found Post) are non-refundable once activated and verified on our servers.</li>
               <li>Agomoni provides technology tools for festive companion discovery and emergency contacts, but does not provide direct emergency dispatch or police response.</li>
             </ul>
           </div>

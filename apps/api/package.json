@@ -5,9 +5,9 @@
   "description": "Agomoni Backend API & Real-time Socket.IO Service",
   "main": "dist/server.js",
   "scripts": {
-    "predev": "node scripts/prepare-prisma.js && node scripts/setup-python.js",
+    "predev": "node scripts/prepare-prisma.js",
     "dev": "tsx watch src/server.ts",
-    "prebuild": "node scripts/prepare-prisma.js && node scripts/setup-python.js",
+    "prebuild": "node scripts/prepare-prisma.js",
     "build": "prisma generate --schema=src/prisma/schema.prisma && prisma db push --schema=src/prisma/schema.prisma --accept-data-loss && tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "db:generate": "node scripts/prepare-prisma.js && prisma generate --schema=src/prisma/schema.prisma",

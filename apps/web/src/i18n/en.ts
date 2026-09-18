@@ -8,7 +8,6 @@ export const en = {
     home: 'Home',
     pujaDate: 'Puja Date',
     lostFound: 'Lost & Found',
-    outfit: 'Outfit Generator',
     memories: 'Memories',
     emergency: 'Emergency',
     songs: 'Puja Songs',
@@ -30,7 +29,7 @@ export const en = {
   },
 
   features: {
-    title: 'Six Festive Pillars',
+    title: 'Five Festive Pillars',
     subtitle: 'A modern digital sanctuary for celebration, bonding, memory, and safety',
     pujaDate: {
       title: 'Puja Date ❤️',
@@ -41,11 +40,6 @@ export const en = {
       title: 'Lost & Found 🧒',
       desc: 'Report lost loved ones or items in pandal crowds. Instant match notifications. Safe & verified.',
       cta: 'View Reports',
-    },
-    outfit: {
-      title: 'Outfit Generator 👗',
-      desc: 'AI festive transformation: from traditional Gorod silk to modern pandal fusion styling.',
-      cta: 'Generate Outfit',
     },
     memories: {
       title: 'Memory Capsule 📦',
@@ -97,16 +91,6 @@ export const en = {
     possibleMatch: 'Possible Match Detected!',
     emptyNotice: 'We hope nobody gets lost. But if someone does, we are here. ❤️',
     contactPoster: 'Contact Reporter (₹49)',
-  },
-
-  outfit: {
-    heading: 'AI Puja Outfit Generator',
-    subheading: 'Blend timeless heritage with contemporary flair for your Puja looks',
-    freeLeft: 'free generations left',
-    unlockUnlimited: 'Unlock Unlimited — ₹29',
-    uploadPrompt: 'Upload Your Photo',
-    generateBtn: 'Generate Puja Outfit ✨',
-    tipsTitle: 'Puja Styling Insights',
   },
 
   memory: {

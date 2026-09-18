@@ -3,18 +3,17 @@
 > **"এই পুজোয়, কিছু মানুষ আপন হোক।"**  
 > *"Celebrate. Connect. Remember. Stay Safe."*
 
-Agomoni is a complete, production-ready, full-stack Progressive Web App (PWA) combining Bengali Durga Puja culture, dating, lost & found, AI outfit generation, memory capsules, emergency system, global music experience, real-time chat, and Razorpay payments.
+Agomoni is a complete, production-ready, full-stack Progressive Web App (PWA) combining Bengali Durga Puja culture, dating, lost & found, memory capsules, emergency system, global music experience, real-time chat, and Razorpay payments.
 
 ---
 
-## 🌟 Six Core Pillars
+## 🌟 Five Core Pillars
 
 1. **❤️ Puja Date (18+)**: Age-verified companion discovery using a multi-factor Vibe Match algorithm (puja days, time slots, interests, and proximity). Includes masked privacy cards, real-time Socket.IO chat with **3 free conversation unlocks**, and a ₹49 one-time Razorpay unlock for unlimited chats.
 2. **🧒 Puja Lost & Found ("পুজোয় হারিয়ে গেলে খুঁজে দিন")**: Lost Person & Lost Item reporting with ₹29 publication order via Razorpay, automatic heuristic "Possible Match" detection engine, masked poster contact, and admin moderation.
-3. **👗 AI Puja Outfit Generator**: AI festive transformation studio with 8 authentic styling motifs (Gorod silk, Dhakai Jamdani, Tussar silk kurta, Ashtami Special, Night Puja), 5 free generations tracked strictly server-side, ₹29 unlimited unlock, and a pluggable `AIProvider` architecture.
-4. **📦 Puja Memory Capsule ("My Puja 2026")**: 100% free digital diary across the festive timeline (Mahalaya -> Shashti -> Saptami -> Ashtami -> Nabami -> Dashami), mood/photo/text logs, private by default with unguessable token-based revocable share links.
-5. **🚨 Puja Emergency**: Direct 1-tap access with explicit location consent, verified emergency helplines (112, 100, 108, Women Helpline 1090, Childline 1098), hospital directory, private personal emergency contacts, and an instant music mute switch.
-6. **🎵 Puja Songs & "✨ Enter Puja Mode"**: Persistent floating mini-player and full-screen player that survives all page navigations, supporting HTML5 ambient audio (Dhak, Shehnai, Stotram) and official embed providers (YouTube / Spotify), playlist categorizations, and an immersive festive particle mode.
+3. **📦 Puja Memory Capsule ("My Puja 2026")**: 100% free digital diary across the festive timeline (Mahalaya -> Shashti -> Saptami -> Ashtami -> Nabami -> Dashami), mood/photo/text logs, private by default with unguessable token-based revocable share links.
+4. **🚨 Puja Emergency**: Direct 1-tap access with explicit location consent, verified emergency helplines (112, 100, 108, Women Helpline 1090, Childline 1098), hospital directory, private personal emergency contacts, and an instant music mute switch.
+5. **🎵 Puja Songs & "✨ Enter Puja Mode"**: Persistent floating mini-player and full-screen player that survives all page navigations, supporting HTML5 ambient audio (Dhak, Shehnai, Stotram) and official embed providers (YouTube / Spotify), playlist categorizations, and an immersive festive particle mode.
 
 ---
 

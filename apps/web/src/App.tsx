@@ -13,7 +13,6 @@ import HomePage from './pages/HomePage';
 import PujaDatePage from './pages/PujaDatePage';
 import ChatPage from './pages/ChatPage';
 import LostFoundPage from './pages/LostFoundPage';
-import OutfitPage from './pages/OutfitPage';
 import MemoryPage from './pages/MemoryPage';
 import SharedMemoryPage from './pages/SharedMemoryPage';
 import EmergencyPage from './pages/EmergencyPage';
@@ -54,7 +53,6 @@ export const App: React.FC = () => {
                     <Route path="/chat" element={<ChatPage />} />
                     <Route path="/chat/:conversationId" element={<ChatPage />} />
                     <Route path="/lost-found" element={<LostFoundPage />} />
-                    <Route path="/outfit" element={<OutfitPage />} />
                     <Route path="/memories" element={<MemoryPage />} />
                     <Route path="/memory/shared/:token" element={<SharedMemoryPage />} />
                     <Route path="/memories/shared/:token" element={<SharedMemoryPage />} />

@@ -20,6 +20,6 @@ Agomoni treats security and personal safety as non-negotiable core pillars.
 - **File Upload Protection**: Validates MIME types (JPEG, PNG, WebP only), enforces a 5MB size limit, stores files with random UUIDs, and executes no uploaded code.
 
 ## 4. Payment Integrity
-- **Backend as Source of Truth**: Pricing (₹49 for Chat, ₹29 for Lost & Found, ₹29 for Outfit) is defined exclusively in the backend `PRODUCTS` catalog.
+- **Backend as Source of Truth**: Pricing (₹49 for Chat, ₹29 for Lost & Found) is defined exclusively in the backend `PRODUCTS` catalog.
 - **HMAC-SHA256 Signature Verification**: Validates Razorpay signature on both client payment returns and asynchronous webhook events before granting entitlements.
 - **Idempotency**: Prevents duplicate entitlement allocations across retries.

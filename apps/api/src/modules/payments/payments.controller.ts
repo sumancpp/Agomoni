@@ -31,13 +31,6 @@ export const PRODUCTS = {
     amount: 4900, // ₹49.00 in paise
     currency: 'INR',
   },
-  OUTFIT_UNLIMITED: {
-    id: 'OUTFIT_UNLIMITED',
-    title: 'AI Outfit Generator — Unlimited Generations',
-    titleBengali: 'AI পুজো পোশাক — আনলিমিটেড তৈরি',
-    amount: 2900, // ₹29.00 in paise
-    currency: 'INR',
-  },
 } as const;
 
 type ProductId = keyof typeof PRODUCTS;
@@ -49,7 +42,7 @@ const razorpay = new Razorpay({
 });
 
 const createOrderSchema = z.object({
-  productId: z.enum(['PUJA_DATE_UNLIMITED_CHAT', 'LOST_FOUND_POST', 'LOST_FOUND_CONTACT', 'OUTFIT_UNLIMITED']),
+  productId: z.enum(['PUJA_DATE_UNLIMITED_CHAT', 'LOST_FOUND_POST', 'LOST_FOUND_CONTACT']),
   metadata: z.record(z.any()).optional(),
 });
 
@@ -66,10 +59,9 @@ export async function grantEntitlement(
   paymentId?: string
 ) {
   return await prisma.$transaction(async (tx) => {
-    // If it's a feature entitlement (e.g. UNLIMITED_CHAT, OUTFIT_UNLIMITED, LOST_FOUND_CONTACT)
+    // If it's a feature entitlement (e.g. UNLIMITED_CHAT, LOST_FOUND_CONTACT)
     if (
       productId === 'PUJA_DATE_UNLIMITED_CHAT' ||
-      productId === 'OUTFIT_UNLIMITED' ||
       productId === 'LOST_FOUND_CONTACT'
     ) {
       const entitlement = await tx.entitlement.upsert({

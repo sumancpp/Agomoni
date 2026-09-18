@@ -24,7 +24,7 @@
 - `POST /report`: Submit moderation report for harassment or abuse.
 
 ## Payments (`/api/v1/payments`)
-- `GET /products`: Catalog of products (`PUJA_DATE_UNLIMITED_CHAT` ₹49, `LOST_FOUND_POST` ₹29, `OUTFIT_UNLIMITED` ₹29).
+- `GET /products`: Catalog of products (`PUJA_DATE_UNLIMITED_CHAT` ₹49, `LOST_FOUND_POST` ₹29).
 - `GET /entitlements`: List active entitlements for the authenticated user.
 - `POST /order`: Generate Razorpay order for product.
 - `POST /verify`: Verify HMAC-SHA256 signature and grant entitlement in transaction.
@@ -34,11 +34,6 @@
 - `GET /`: Active listings with optional `category` filter and text search.
 - `POST /`: Create listing (validates ₹29 fee, runs heuristic match detection, sends notifications).
 - `GET /:id/matches`: View possible matches detected for a listing.
-
-## AI Outfit Generator (`/api/v1/outfit`)
-- `GET /status`: Check remaining free generations (out of 5) or unlimited status.
-- `GET /history`: View past generated festive outfits.
-- `POST /generate`: Run AI festive transformation (enforces 5 free limit, triggers ₹29 unlock when exhausted).
 
 ## Memory Capsule (`/api/v1/memories`)
 - `GET /`: Private festive timeline logs (Mahalaya to Dashami).

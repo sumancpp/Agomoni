@@ -71,7 +71,6 @@ async function main() {
       entitlements: {
         create: [
           { productType: 'PUJA_DATE_UNLIMITED_CHAT', active: true },
-          { productType: 'OUTFIT_UNLIMITED', active: true },
         ],
       },
     },

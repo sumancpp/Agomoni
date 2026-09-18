@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, Search, Shirt, BookHeart, User } from 'lucide-react';
+import { Home, Heart, Search, BookHeart, User } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const BottomNav: React.FC = () => {
@@ -11,7 +11,6 @@ export const BottomNav: React.FC = () => {
     { to: '/', label: t.nav.home, icon: Home },
     { to: '/puja-date', label: t.nav.pujaDate, icon: Heart },
     { to: '/lost-found', label: t.nav.lostFound, icon: Search },
-    { to: '/outfit', label: t.nav.outfit, icon: Shirt },
     { to: '/memories', label: t.nav.memories, icon: BookHeart },
     { to: '/profile', label: t.nav.profile, icon: User },
   ];

@@ -26,7 +26,7 @@ graph TD
 ### 2.1 Global Music Experience Layer
 - **Persistent Player Context**: Lives at the root provider layer, completely decoupled from page route changes.
 - **Dual Engine**:
-  - Native HTML5 Audio for bundled royalty-free festive soundscapes (Dhak, Shehnai, Chants), enabling continuous uninterrupted playback while moving between Date, Lost & Found, Outfit, and Memory tabs.
+  - Native HTML5 Audio for bundled royalty-free festive soundscapes (Dhak, Shehnai, Chants), enabling continuous uninterrupted playback while moving between Date, Lost & Found, and Memory tabs.
   - Official HTML Embed Player (YouTube/Spotify) inside an expandable modal to strictly comply with copyright and anti-scraping policies.
 - **Safety Interlock**: Automatically exposes `pauseForEmergency()` to mute or pause music immediately upon entering the Emergency section.
 
@@ -44,9 +44,6 @@ All entitlement checks are enforced strictly server-side:
 - **Chat Gate**:
   - Tracks distinct conversation participant records for the user.
   - If `count >= 3`, verifies `PUJA_DATE_UNLIMITED_CHAT` entitlement. If absent, responds with HTTP 402 and product pricing.
-- **Outfit Gate**:
-  - Tracks successful `COMPLETED` outfit generations for the user.
-  - If `count >= 5`, verifies `OUTFIT_UNLIMITED` entitlement before dispatching to AI providers.
 - **Payment Verification**:
   - Uses HMAC-SHA256 signature verification over `orderId|paymentId` with `RAZORPAY_KEY_SECRET`.
   - Grants entitlements in atomic database transactions.

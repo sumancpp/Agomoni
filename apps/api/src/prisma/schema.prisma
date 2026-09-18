@@ -38,7 +38,6 @@ model User {
   lostFoundPosts  LostFoundPost[]
   entitlements    Entitlement[]
   payments        Payment[]
-  outfitGenerations OutfitGeneration[]
   memoryCapsules  MemoryCapsule[]
   emergencyContacts EmergencyContact[]
   notifications   Notification[]
@@ -220,7 +219,7 @@ model LostFoundMatch {
 model Payment {
   id              String         @id @default(uuid())
   userId          String
-  productId       String         // PUJA_DATE_UNLIMITED_CHAT, LOST_FOUND_POST, OUTFIT_UNLIMITED
+  productId       String         // PUJA_DATE_UNLIMITED_CHAT, LOST_FOUND_POST
   amount          Int            // in INR Paise (e.g. 4900 for ₹49, 2900 for ₹29)
   currency        String         @default("INR")
   provider        String         @default("RAZORPAY")
@@ -250,7 +249,7 @@ model PaymentEvent {
 model Entitlement {
   id              String         @id @default(uuid())
   userId          String
-  productType     String         // PUJA_DATE_UNLIMITED_CHAT, OUTFIT_UNLIMITED, LOST_FOUND_POST
+  productType     String         // PUJA_DATE_UNLIMITED_CHAT, LOST_FOUND_POST
   active          Boolean        @default(true)
   grantedAt       DateTime       @default(now())
   paymentId       String?        @unique
@@ -261,21 +260,6 @@ model Entitlement {
   @@unique([userId, productType])
 }
 
-model OutfitGeneration {
-  id              String         @id @default(uuid())
-  userId          String
-  inputImageUrl   String
-  resultImageUrl  String
-  gender          String
-  style           String         // Traditional, Modern, Bengali Traditional, Elegant, Casual Puja, Ashtami Special, Night Puja, Family Puja
-  pujaDay         String         // Shashti, Saptami, Ashtami, Nabami, Dashami
-  prompt          String?
-  aiProvider      String         @default("DEVELOPMENT_MOCK")
-  status          String         @default("COMPLETED") // PENDING, COMPLETED, FAILED
-  createdAt       DateTime       @default(now())
-
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
 
 model MemoryCapsule {
   id              String         @id @default(uuid())
@@ -321,7 +305,7 @@ model Notification {
   userId          String
   title           String
   message         String
-  type            String         // MATCH, CHAT, LOST_FOUND, PAYMENT, OUTFIT, SECURITY
+  type            String         // MATCH, CHAT, LOST_FOUND, PAYMENT, SECURITY
   targetUrl       String?
   isRead          Boolean        @default(false)
   createdAt       DateTime       @default(now())
