@@ -14,6 +14,8 @@ export interface UserProfile {
     preferredGender?: string;
     preferredMinAge?: number;
     preferredMaxAge?: number;
+    hideProfile?: boolean;
+    isMatchingActive?: boolean;
   };
   entitlements?: string[];
 }

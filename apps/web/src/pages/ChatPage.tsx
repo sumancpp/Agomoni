@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
-import { apiFetch } from '../lib/api';
+import { apiFetch, resolveImageUrl } from '../lib/api';
 
 interface Message {
   id: string;
@@ -487,9 +487,12 @@ export const ChatPage: React.FC = () => {
                       <div className="w-11 h-11 rounded-full bg-[#240F0F] border border-gold-500/30 overflow-hidden flex items-center justify-center text-sm font-bold text-gold-300">
                         {conv.otherUser?.avatarUrl ? (
                           <img
-                            src={conv.otherUser.avatarUrl}
+                            src={resolveImageUrl(conv.otherUser.avatarUrl)}
                             alt=""
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
                         ) : (
                           conv.otherUser?.displayName?.charAt(0) || 'U'
@@ -573,9 +576,12 @@ export const ChatPage: React.FC = () => {
                     <div className="w-10 h-10 rounded-full bg-[#240F0F] border border-gold-500/40 overflow-hidden flex items-center justify-center text-xs font-bold text-gold-300 shrink-0">
                       {activeOtherUser?.avatarUrl ? (
                         <img
-                          src={activeOtherUser.avatarUrl}
+                          src={resolveImageUrl(activeOtherUser.avatarUrl)}
                           alt=""
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                       ) : (
                         activeOtherUser?.displayName?.charAt(0) || 'U'

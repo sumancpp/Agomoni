@@ -8,7 +8,7 @@ const router = Router();
 
 const generateSchema = z.object({
   inputImageUrl: z.string().min(1),
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'COUPLE']),
   style: z.enum([
     'Traditional',
     'Modern',

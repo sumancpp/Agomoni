@@ -5,7 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import FestiveButton from '../common/FestiveButton';
-import { apiFetch } from '../../lib/api';
+import { apiFetch, resolveImageUrl } from '../../lib/api';
 
 interface NotificationItem {
   id: string;
@@ -333,12 +333,23 @@ export const Navbar: React.FC = () => {
               >
                 {user?.profile?.avatarUrl ? (
                   <img
-                    src={user.profile.avatarUrl}
-                    alt={user.profile.displayName}
-                    className="w-8 h-8 rounded-full object-cover border border-gold-500/40"
+                    src={resolveImageUrl(user.profile.avatarUrl)}
+                    alt={user.profile.displayName || 'User'}
+                    onError={(e) => {
+                      // Gracefully fallback to initial circle if image fails to load
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent && !parent.querySelector('.avatar-fallback')) {
+                        const div = document.createElement('div');
+                        div.className = 'avatar-fallback w-8 h-8 rounded-full bg-sindoor-800 text-white flex items-center justify-center text-xs font-bold border border-gold-500/30';
+                        div.innerText = user?.profile?.displayName?.charAt(0) || 'U';
+                        parent.appendChild(div);
+                      }
+                    }}
+                    className="w-8 h-8 rounded-full object-cover border border-gold-500/40 shadow-sm"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-sindoor-800 text-white flex items-center justify-center text-xs font-bold border border-gold-500/30">
+                  <div className="w-8 h-8 rounded-full bg-sindoor-800 text-white flex items-center justify-center text-xs font-bold border border-gold-500/30 shadow-sm">
                     {user?.profile?.displayName?.charAt(0) || 'U'}
                   </div>
                 )}

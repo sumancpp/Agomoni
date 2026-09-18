@@ -18,7 +18,7 @@ import {
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
-import { apiFetch } from '../lib/api';
+import { apiFetch, resolveImageUrl } from '../lib/api';
 
 interface Memory {
   id: string;
@@ -382,7 +382,7 @@ export const MemoryPage: React.FC = () => {
             >
               {m.mediaUrls.length > 0 && (
                 <div className="relative h-60 w-full bg-night-850 overflow-hidden">
-                  <img src={m.mediaUrls[0]} alt={m.title} className="w-full h-full object-cover" />
+                  <img src={resolveImageUrl(m.mediaUrls[0])} alt={m.title} className="w-full h-full object-cover" />
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-night-950/85 backdrop-blur-md border border-gold-500/40 text-gold-300 text-xs font-bold">
                     {m.pujaDay}
                   </div>
@@ -593,7 +593,7 @@ export const MemoryPage: React.FC = () => {
 
                     {photoUrl ? (
                       <div className="relative rounded-2xl overflow-hidden border border-gold-500/30 bg-night-950 h-36 flex items-center justify-center">
-                        <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                        <img src={resolveImageUrl(photoUrl)} alt="Preview" className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => setPhotoUrl('')}

@@ -11,7 +11,7 @@ export const OutfitPage: React.FC = () => {
   const { lang, t } = useLanguage();
   const { token, isAuthenticated } = useAuth();
 
-  const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('FEMALE');
+  const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER' | 'COUPLE'>('FEMALE');
   const [style, setStyle] = useState('Bengali Traditional');
   const [pujaDay, setPujaDay] = useState('Ashtami');
   const [inputImageUrl, setInputImageUrl] = useState('');
@@ -31,6 +31,7 @@ export const OutfitPage: React.FC = () => {
 
   const resolveOutfitUrl = (url: string | null | undefined, itemGender: string): string => {
     if (!url) {
+      if (itemGender === 'COUPLE') return '/outfits/couple-traditional.jpg';
       return itemGender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
     }
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
@@ -51,31 +52,31 @@ export const OutfitPage: React.FC = () => {
   const generationSteps = [
     {
       icon: '🪔',
-      titleBn: 'মুখাবয়ব ও স্কিন টোন বিশ্লেষণ হচ্ছে...',
-      titleEn: 'Analyzing face landmarks & skin tone...',
-      subBn: 'হাই-রেজোলিউশন ফেস ম্যাপিং সক্রিয়',
-      subEn: 'Facial keypoint geometry mapped',
+      titleBn: 'মুখাবয়ব ও শারীরিক বৈশিষ্ট্য বিশ্লেষণ হচ্ছে...',
+      titleEn: 'Analyzing face landmarks & subject identity...',
+      subBn: 'হাই-রেজোলিউশন ফেস ম্যাপিং ও স্কিন টোন ধারণ',
+      subEn: 'Facial keypoint geometry & skin tone mapped',
+    },
+    {
+      icon: '📸',
+      titleBn: 'OpenAI প্রাইমারি ফটো ট্রান্সফরমেশন...',
+      titleEn: 'OpenAI Primary Photo Transformation...',
+      subBn: 'আসল ছবিকে দুর্গোৎসবের জীবন্ত রূপে রূপান্তর',
+      subEn: 'Transforming source photo with OpenAI model',
     },
     {
       icon: '👗',
-      titleBn: `ঐতিহ্যবাহী ${style} পোশাক বিন্যাস চলছে...`,
-      titleEn: `Synthesizing authentic ${style} attire...`,
-      subBn: 'IDM-VTON ও PhotoMaker নিউরাল ড্রেসিং সক্রিয়',
-      subEn: 'Neural textile draping & texture synthesis',
+      titleBn: 'বাঙালি অষ্টমী ঐতিহ্যবাহী পোশাক ও মণ্ডপ...',
+      titleEn: 'Draping authentic Bengali Ashtami attire...',
+      subBn: 'গরদ সিল্ক, জরির কাজ ও প্রতিমার ব্যাকগ্রাউন্ড বোকেহ',
+      subEn: 'Tussar/Garad silk, jewelry & pandal ambient lights',
     },
     {
       icon: '✨',
-      titleBn: 'ফেস রিস্টোরেশন ও স্কিন টেক্সচার রিটাচিং...',
-      titleEn: 'Restoring photorealistic skin & face details...',
-      subBn: 'CodeFormer / GFPGAN এনহ্যান্সার সক্রিয়',
-      subEn: 'CodeFormer neural face enhancement active',
-    },
-    {
-      icon: '🪘',
-      titleBn: 'কলকাতা দুর্গাপূজা মণ্ডপের আলোকসজ্জা যুক্ত হচ্ছে...',
-      titleEn: 'Illuminating with Kolkata Durga Puja pandal lights...',
-      subBn: 'চূড়ান্ত ফিনিশিং সম্পন্ন হচ্ছে...',
-      subEn: 'Applying festival colors & final touches...',
+      titleBn: 'ফোটোরিয়ালিস্টিক ডিএসএলআর ফিনিশিং...',
+      titleEn: 'Finalizing photorealistic DSLR portrait...',
+      subBn: 'বাস্তব স্কিন টেক্সচার ও স্বাভাবিক প্রাকৃতিক আলো',
+      subEn: 'Natural skin pores, realistic hair & depth of field',
     },
   ];
 
@@ -312,20 +313,20 @@ export const OutfitPage: React.FC = () => {
           <form onSubmit={handleGenerate} className="space-y-4 text-xs">
             {/* Gender Selection */}
             <div>
-              <label className="text-cream-300 block mb-1.5 font-medium">Gender / লিঙ্গ</label>
+              <label className="text-cream-300 block mb-1.5 font-medium">Photo Subject / ছবির ব্যক্তি</label>
               <div className="grid grid-cols-3 gap-2">
-                {(['FEMALE', 'MALE', 'OTHER'] as const).map((g) => (
+                {(['FEMALE', 'MALE', 'COUPLE'] as const).map((g) => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => setGender(g)}
                     className={`py-2 rounded-xl border text-center transition-all ${
                       gender === g
-                        ? 'bg-sindoor-900/60 border-sindoor-500 text-gold-300 font-semibold'
+                        ? 'bg-sindoor-900/60 border-sindoor-500 text-gold-300 font-semibold shadow-sm'
                         : 'bg-night-850 border-gold-500/20 text-cream-300'
                     }`}
                   >
-                    {g === 'FEMALE' ? 'নারী (Female)' : g === 'MALE' ? 'পুরুষ (Male)' : 'অন্যান্য'}
+                    {g === 'FEMALE' ? 'নারী (Female)' : g === 'MALE' ? 'পুরুষ (Male)' : 'যুগল (Couple)'}
                   </button>
                 ))}
               </div>
@@ -713,7 +714,7 @@ export const OutfitPage: React.FC = () => {
                   className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 animate-in fade-in zoom-in-95 duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    const fallback = gender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
+                    const fallback = gender === 'COUPLE' ? '/outfits/couple-traditional.jpg' : gender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
                     const fullFallback = window.location.origin + fallback;
                     if (target.src !== fullFallback) {
                       target.src = fallback;
@@ -843,7 +844,7 @@ export const OutfitPage: React.FC = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     onError={(e) => {
                       const target = e.currentTarget;
-                      const fallback = item.gender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
+                      const fallback = item.gender === 'COUPLE' ? '/outfits/couple-traditional.jpg' : item.gender === 'MALE' ? '/outfits/male-traditional.jpg' : '/outfits/female-traditional.jpg';
                       const fullFallback = window.location.origin + fallback;
                       if (target.src !== fullFallback) {
                         target.src = fallback;

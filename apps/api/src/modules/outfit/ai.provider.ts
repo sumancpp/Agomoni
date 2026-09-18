@@ -1,7 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
+import { File as BufferFile } from 'node:buffer';
+import OpenAI, { toFile } from 'openai';
 import { config } from '../../config/index.js';
+
+// Polyfill globalThis.File in Node.js runtime for OpenAI SDK multipart uploads
+if (typeof (globalThis as any).File === 'undefined') {
+  (globalThis as any).File = BufferFile;
+}
 
 const localDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
@@ -39,10 +46,23 @@ export async function ensureLocalImage(inputUrl: string): Promise<string | null>
     fs.mkdirSync(targetDir, { recursive: true });
   }
 
-  // 1. Already a local uploaded file
-  if (inputUrl.startsWith('/uploads/')) {
-    const local = path.resolve(targetDir, path.basename(inputUrl));
-    if (fs.existsSync(local)) return local;
+  // 1. Direct or relative file path on disk
+  const candidateLocalPaths = [
+    inputUrl,
+    path.resolve(inputUrl),
+    path.resolve(process.cwd(), inputUrl.replace(/^\/+/, '')),
+    path.resolve(targetDir, path.basename(inputUrl)),
+    path.resolve(process.cwd(), 'uploads', inputUrl.replace(/^\/+/, '')),
+    path.resolve(process.cwd(), 'uploads/outfits', path.basename(inputUrl)),
+    path.resolve(localDir, '../../..', inputUrl.replace(/^\/+/, '')),
+    path.resolve(localDir, '../../../uploads', inputUrl.replace(/^\/+/, '')),
+    path.resolve(localDir, '../../../uploads/outfits', path.basename(inputUrl)),
+  ];
+
+  for (const cPath of candidateLocalPaths) {
+    if (fs.existsSync(cPath) && fs.statSync(cPath).isFile()) {
+      return cPath;
+    }
   }
 
   // 2. Base64 Data URL
@@ -67,7 +87,7 @@ export async function ensureLocalImage(inputUrl: string): Promise<string | null>
   if (inputUrl.startsWith('http://') || inputUrl.startsWith('https://')) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(inputUrl, { signal: controller.signal });
       clearTimeout(timeout);
 
@@ -88,262 +108,253 @@ export async function ensureLocalImage(inputUrl: string): Promise<string | null>
 }
 
 /**
- * Builds authentic, culturally grounded, strictly photorealistic DSLR prompts.
- * Explicitly avoids cartoon, illustration, or anime triggers.
+ * Constructs the Master OpenAI Image Transformation Prompt adhering strictly to:
+ * - Real photograph transformation
+ * - Identity preservation (facial structure, proportions, eyes, nose, lips, jawline, hair, beard, glasses, skin tone, age)
+ * - Authentic Bengali Durga Puja Ashtami attire
+ * - Durga Puja Pandal environment with Goddess Durga idol in the background
+ * - Professional DSLR portrait photography optics & realistic lighting
+ * - Strict avoidance of anime, cartoon, illustration, CGI, 3D render, doll skin, AI filters
  */
-export function buildBengaliPhotorealisticPrompt(options: {
+export function buildMasterOpenAIPrompt(options: {
   gender: string;
   style: string;
   pujaDay: string;
   userPrompt?: string;
-  facialDescription?: string;
-}): { prompt: string; negativePrompt: string } {
+}): string {
+  const isCouple = options.gender === 'COUPLE';
   const isFemale = options.gender === 'FEMALE';
   const isMale = options.gender === 'MALE';
-  const isModern = options.style === 'Modern' || options.style === 'Casual Puja';
-  const isNight = options.style === 'Night Puja';
-  const isAshtami = options.pujaDay === 'Ashtami' || options.style === 'Ashtami Special';
-  const isDashami = options.pujaDay === 'Dashami';
+  const pujaDay = options.pujaDay || 'Ashtami';
 
-  // 1. Person / Subject base
-  let subject = options.facialDescription?.trim();
-  if (!subject) {
-    if (isMale) {
-      subject = 'authentic candid color photograph of a real handsome 24-year-old Bengali Indian young man with natural skin texture, visible skin pores, clean groomed hair, natural warm skin tone, gentle festive smile';
-    } else if (isFemale) {
-      subject = 'authentic candid color photograph of a real beautiful 23-year-old Bengali Indian young woman with dark expressive eyes, natural skin texture with visible pores, radiant festive smile, delicate bindi';
-    } else {
-      subject = 'authentic candid color photograph of a stylish young Indian Bengali person with a warm festive smile';
-    }
-  } else {
-    subject = `authentic candid color photograph of ${subject}`;
-  }
+  let subjectIdentityInstruction = '';
+  let attireInstruction = '';
 
-  // 2. Attire & Styling details
-  let attire = '';
-  if (isFemale) {
-    if (isDashami) {
-      attire = 'celebrating Bijoya Dashami Sindoor Khela, wearing a traditional authentic white and red silk Garad saree with gold zari border, subtle playful touches of red vermilion sindoor on cheeks and forehead, gold jhumkas, red and white shankha pola bangles';
-    } else if (isAshtami) {
-      attire = 'wearing an authentic traditional Bengali Lal-Paar Garad silk saree in pure off-white and crimson red with intricate gold zari borders, authentic heirloom Bengali gold jewelry including sitahar necklace and jhumka earrings, shankha-pola bangles, luminous red round bindi, delicate sandalwood chondon art along eyebrows, holding a brass puja thali';
-    } else if (isNight || isModern) {
-      attire = 'wearing a glamorous contemporary royal midnight blue and gold Banarasi fusion silk saree, designer blouse, statement temple jewelry, jasmine floral gajra garland in hair, evening festival celebration';
-    } else {
-      attire = 'wearing an authentic handloom Bengali silk saree with rich gold and crimson zari embroidery, layered gold necklace, red bindi, alta decorated hands, traditional ethnic Bengali festival look';
-    }
+  if (isCouple) {
+    subjectIdentityInstruction =
+      'Preserve the exact identity and recognizable appearance of both individuals in the input photograph. ' +
+      'Preserve facial structure, facial proportions, eyes, nose, lips, jawlines, hairstyles, facial hair, glasses, ' +
+      'natural skin tones, approximate ages, body proportions, natural facial asymmetry, and relative position.';
+    attireInstruction =
+      'For the couple, dress both subjects in coordinated authentic traditional Bengali Durga Puja festive clothing. ' +
+      'The male subject wears an elegant ivory/off-white Bengali panjabi kurta with subtle maroon/red embroidery, ' +
+      'traditional pleated Bengali dhoti, and a red-and-gold bordered silk uttoriyo stole. ' +
+      'The female subject wears a traditional Bengali white/off-white Garad silk saree with a rich red Bengali border ' +
+      'and gold zari, an elegant red blouse, authentic heirloom Bengali gold jewelry, jhumka earrings, bangles, and a subtle red bindi.';
   } else if (isMale) {
-    if (isDashami) {
-      attire = 'celebrating Bijoya Dashami, wearing a crisp pristine ivory tussar silk Panjabi kurta with red thread work on collar, traditional pleated dhoti, exchanging warm festive greetings and sweets';
-    } else if (isAshtami) {
-      attire = 'wearing an authentic Bengali handloom tussar silk Panjabi kurta with crimson red and antique gold zardozi embroidery on collar and chest, traditional draped pleated maroon dhuti, silk uttorio stole draped elegantly over shoulder, holding a decorative puja brass pradeep';
-    } else if (isNight || isModern) {
-      attire = 'wearing a stylish contemporary Indo-Western royal navy blue Nehru vest jacket with embroidered mandarin collar over a tailored raw silk kurta and churidar pants, modern festive celebration';
-    } else {
-      attire = 'wearing a classic golden yellow and ivory muga silk kurta with intricate Kantha stitch embroidery, matching traditional pleated dhuti, authentic Bengali festival attire';
-    }
+    subjectIdentityInstruction =
+      'Preserve the exact identity and recognizable appearance of the male person in the input photograph. ' +
+      'Preserve facial structure, facial proportions, eyes, eyebrows, nose, lips, jawline, hairstyle, beard, moustache, ' +
+      'glasses, natural skin tone, approximate age, body proportions, natural facial asymmetry, and recognizable characteristics.';
+    attireInstruction =
+      'Dress the male subject in authentic Bengali Durga Puja traditional clothing: an elegant ivory/off-white Bengali panjabi ' +
+      'kurta with subtle maroon/red embroidery along collar and placket, traditional pleated Bengali dhoti, and a rich red-and-gold bordered silk uttoriyo stole draped over shoulder.';
+  } else if (isFemale) {
+    subjectIdentityInstruction =
+      'Preserve the exact identity and recognizable appearance of the female person in the input photograph. ' +
+      'Preserve facial structure, facial proportions, eyes, eyebrows, nose, lips, jawline, hairstyle, skin tone, ' +
+      'approximate age, body proportions, natural facial asymmetry, and recognizable characteristics.';
+    attireInstruction =
+      'Dress the female subject in authentic Bengali Durga Puja traditional clothing: a traditional Bengali white/off-white Garad silk saree ' +
+      'with a rich crimson red Bengali border and gold zari, tailored red blouse, heirloom Bengali gold jewelry, jhumka earrings, ' +
+      'shankha-pola and gold bangles, and a subtle festive red bindi on forehead.';
   } else {
-    attire = 'wearing a magnificent celebratory Bengali festive drape with artisanal kantha embroidery, royal autumn colors, and traditional gold accents';
+    subjectIdentityInstruction =
+      'Preserve the exact identity and recognizable appearance of the person or people in the input photograph. ' +
+      'Preserve facial structure, facial proportions, eyes, nose, lips, jawline, hairstyle, skin tone, and approximate age.';
+    attireInstruction =
+      'Dress the subject in authentic Bengali Durga Puja festive handloom silk attire with rich gold and crimson accents.';
   }
 
-  const customNotes = options.userPrompt ? `, ${options.userPrompt}` : '';
+  const customNotes = options.userPrompt ? ` Specific styling preferences: ${options.userPrompt}.` : '';
 
-  const prompt = `Hyperrealistic candid photograph, 35mm DSLR photography, ${subject}, ${attire}${customNotes}, celebrating Durga Puja at an illuminated Kolkata pandal with warm festive bokeh lights in the soft background, shot on Canon EOS R5 with 85mm f/1.4 lens, natural skin texture, visible pores, realistic eyes, cinematic ambient festive lighting, 8k resolution, photorealistic, uncompressed real photograph.`;
+  return `Transform the provided real photograph into an authentic, highly photorealistic Bengali Durga Puja ${pujaDay} portrait photograph.
 
-  const negativePrompt = 'cartoon, anime, 3d render, cgi, illustration, painting, drawing, sketch, artwork, digital art, doll, plastic skin, airbrushed, fake, smooth doll skin, oversaturated, deformed, bad anatomy, disfigured face, bad eyes, unnatural skin, text, watermark';
+This is a REAL PHOTOGRAPH TRANSFORMATION task.
 
-  return { prompt, negativePrompt };
+${subjectIdentityInstruction}
+The person must remain clearly recognizable as the same person from the source photograph.
+Do not replace the person's face and do not create a different person.
+Transform primarily the clothing, background, lighting and festive environment.
+
+${attireInstruction}${customNotes}
+
+Place the subjects inside a beautiful realistic Bengali Durga Puja pandal during ${pujaDay}.
+Include a beautifully decorated Goddess Durga idol naturally positioned in the background, traditional Bengali pandal decorations, marigold flowers, red and cream fabric, brass lamps, diyas and warm golden festive lighting.
+Keep the human subject as the primary focus. The Goddess Durga idol must remain naturally in the soft background with realistic depth of field and bokeh; do not let the background overpower the subject.
+
+Make the final result look exactly like a professional real-world photograph captured by a professional DSLR or mirrorless camera (35mm / 85mm portrait lens) at a Bengali Durga Puja celebration.
+Use natural human skin texture, realistic visible pores, natural hair strands, realistic eyes, realistic fabric texture, physically plausible lighting, natural shadows, realistic highlights, realistic depth of field, realistic lens rendering and subtle professional color grading.
+The subject and environment must have consistent lighting and must appear naturally photographed together.
+The final image must be photographic, natural, elegant and culturally authentic.
+
+Absolutely avoid anime, manga, cartoon, illustration, digital painting, oil painting, watercolor, comic-book styling, CGI, 3D rendering, fantasy art, plastic skin, porcelain skin, doll-like faces, artificial eyes, excessive beauty filters, excessive HDR, oversaturation, unrealistic lighting, face replacement, celebrity resemblance or generic AI faces.
+Do not alter the person's identity. Do not generate a new person. Do not distort the face, hands, fingers, eyes, jewelry or clothing.
+The final image should look like an authentic professional Bengali Durga Puja photograph taken in real life.`;
 }
 
 /**
- * Hugging Face Serverless Inference: Generates ultra-realistic photographic portraits
- * using FLUX.1-schnell (the premier open-weights photorealism model).
+ * PRIMARY GENERATOR:
+ * Transforms the user's actual photograph using the official OpenAI Image Transformation API.
+ * The user's uploaded photograph is passed directly to the model as the input image.
  */
-export async function generateHuggingFaceImage(prompt: string): Promise<string | null> {
-  const token = config.HF_TOKEN || config.HUGGINGFACE_API_KEY || process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY;
-  if (!token) return null;
+export async function transformWithOpenAI(
+  sourceImagePath: string,
+  options: OutfitGenerationInput
+): Promise<string | null> {
+  const apiKey =
+    (config as any).GPT_IMAGE_API_KEY ||
+    config.OPENAI_API_KEY ||
+    process.env.GPT_IMAGE_API_KEY ||
+    process.env.OPENAI_API_KEY;
 
-  const models = [
-    'black-forest-labs/FLUX.1-schnell',
-    'black-forest-labs/FLUX.1-dev',
-    'stabilityai/stable-diffusion-xl-base-1.0',
-  ];
-
-  for (const model of models) {
-    try {
-      console.log(`[HuggingFace] Requesting ultra-realistic photographic inference with ${model}...`);
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-
-      const res = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'x-wait-for-model': 'true',
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      if (res.ok) {
-        const buffer = Buffer.from(await res.arrayBuffer());
-        if (buffer.length > 5000) {
-          const filename = `agomoni-hf-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
-          const targetDir = path.resolve(config.UPLOAD_DIR);
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-          }
-          const savePath = path.resolve(targetDir, filename);
-          fs.writeFileSync(savePath, buffer);
-          console.log(`[HuggingFace] Real DSLR photograph generated & saved: ${savePath} (${buffer.length} bytes)`);
-          return `/uploads/${filename}`;
-        }
-      } else {
-        const errText = await res.text();
-        console.warn(`[HuggingFace] Model ${model} returned status ${res.status}:`, errText.slice(0, 150));
-      }
-    } catch (e: any) {
-      console.warn(`[HuggingFace] Inference failed on ${model}:`, e?.message || e);
-    }
+  if (!apiKey) {
+    console.warn('[OpenAI Primary] No OPENAI_API_KEY available in backend environment.');
+    return null;
   }
 
-  return null;
-}
+  if (!fs.existsSync(sourceImagePath)) {
+    console.warn('[OpenAI Primary] Source image not found on disk at:', sourceImagePath);
+    return null;
+  }
 
-/**
- * OpenAI DALL-E 3: Generates natural camera photographs with style: "natural"
- * preventing cartoon/airbrushed digital art styles.
- */
-export async function generateOpenAIImage(prompt: string): Promise<string | null> {
-  const apiKey = (config as any).GPT_IMAGE_API_KEY || config.OPENAI_API_KEY || process.env.GPT_IMAGE_API_KEY || process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
+  const rawBaseUrl =
+    (config as any).GPT_IMAGE_BASE_URL ||
+    process.env.GPT_IMAGE_BASE_URL ||
+    process.env.OPENAI_BASE_URL ||
+    undefined;
 
-  const rawBaseUrl = (config as any).GPT_IMAGE_BASE_URL || process.env.GPT_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.openai.com';
-  const endpoint = rawBaseUrl.endsWith('/v1/images/generations')
-    ? rawBaseUrl
-    : `${rawBaseUrl.replace(/\/+$/, '')}/v1/images/generations`;
-  const modelName = (config as any).GPT_IMAGE_MODEL || process.env.GPT_IMAGE_MODEL || 'dall-e-3';
+  const modelName =
+    (config as any).GPT_IMAGE_MODEL ||
+    process.env.GPT_IMAGE_MODEL ||
+    'gpt-image-2';
+
+  const promptText = buildMasterOpenAIPrompt(options);
 
   try {
-    console.log(`[OpenAI/GPT-Image] Requesting image generation (${modelName}) from ${endpoint}...`);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
-
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: modelName,
-        prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard',
-        style: 'natural',
-      }),
-      signal: controller.signal,
+    const client = new OpenAI({
+      apiKey,
+      baseURL: rawBaseUrl,
     });
-    clearTimeout(timeout);
 
-    if (res.ok) {
-      const data = (await res.json()) as any;
-      const imageUrl = data.data?.[0]?.url;
-      if (imageUrl) {
-        const imgRes = await fetch(imageUrl);
-        if (imgRes.ok) {
-          const buffer = Buffer.from(await imgRes.arrayBuffer());
-          const filename = `agomoni-openai-${Date.now()}.jpg`;
-          const targetDir = path.resolve(config.UPLOAD_DIR);
-          fs.writeFileSync(path.resolve(targetDir, filename), buffer);
-          return `/uploads/${filename}`;
-        }
-        return imageUrl;
+    console.log(`[OpenAI Primary] Transforming uploaded photograph with model: ${modelName}...`);
+
+    const imageFile = await toFile(
+      fs.readFileSync(sourceImagePath),
+      path.basename(sourceImagePath),
+      { type: 'image/jpeg' }
+    );
+
+    const response = await client.images.edit({
+      image: imageFile,
+      prompt: promptText,
+      model: modelName,
+      n: 1,
+      size: '1024x1024',
+    });
+
+    const item = response.data?.[0];
+    let imageBuffer: Buffer | null = null;
+
+    if (item?.b64_json) {
+      imageBuffer = Buffer.from(item.b64_json, 'base64');
+    } else if (item?.url) {
+      console.log('[OpenAI Primary] Downloading generated realistic image from OpenAI URL...');
+      const imgRes = await fetch(item.url);
+      if (imgRes.ok) {
+        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
       }
-    } else {
-      console.warn('[OpenAI] DALL-E 3 error:', res.status, (await res.text()).slice(0, 200));
     }
-  } catch (e: any) {
-    console.warn('[OpenAI] Generation failed:', e?.message || e);
+
+    if (imageBuffer && imageBuffer.length > 5000) {
+      const targetDir = path.resolve(config.UPLOAD_DIR);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+      const filename = `agomoni-openai-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+      const savePath = path.resolve(targetDir, filename);
+      fs.writeFileSync(savePath, imageBuffer);
+      console.log(`[OpenAI Primary] Successfully saved authentic realistic photograph: ${savePath} (${imageBuffer.length} bytes)`);
+      return `/uploads/${filename}`;
+    }
+
+    console.warn('[OpenAI Primary] OpenAI response did not contain valid image data.');
+  } catch (err: any) {
+    // Log safe diagnostic information without exposing API keys or tokens
+    console.warn(
+      `[OpenAI Primary] Transformation failed: status=${err?.status}, code=${err?.code || err?.type || 'unknown'}`
+    );
   }
 
   return null;
 }
 
 /**
- * High-Fidelity Photorealistic Bengali AI Outfit Synthesizer.
- * Cascades across Hugging Face FLUX, OpenAI DALL-E 3 Natural,
- * and Photorealistic Neural Diffusion with strict camera prompts.
+ * OPTIONAL SECONDARY AI ENHANCEMENT MODEL:
+ * If a secondary enhancement model is configured in the project, it may perform
+ * subtle resolution/detail restoration.
+ *
+ * It MUST NEVER:
+ * - replace the person's face
+ * - change identity
+ * - redesign clothing
+ * - regenerate the person
+ * - turn the photograph into an illustration
+ * - override the OpenAI-generated composition
+ *
+ * If secondary model is not configured, fails, or degrades quality,
+ * returns the original OpenAI image directly.
  */
-export async function generateNeuralOutfitImage(options: {
-  gender: string;
-  style: string;
-  pujaDay: string;
-  userPrompt?: string;
-  facialDescription?: string;
-}): Promise<string> {
-  const { prompt } = buildBengaliPhotorealisticPrompt(options);
+export async function enhanceWithSecondaryModel(
+  openaiImageUrl: string,
+  options: OutfitGenerationInput
+): Promise<string> {
+  // Check if a secondary enhancement model is explicitly enabled
+  const secondaryEnabled = process.env.ENABLE_SECONDARY_ENHANCER === 'true';
 
-  // Tier 1: Hugging Face Serverless FLUX.1-schnell (Photorealistic open weights)
-  const hfImage = await generateHuggingFaceImage(prompt);
-  if (hfImage) {
-    return hfImage;
+  if (!secondaryEnabled) {
+    // Return OpenAI image directly as the primary final result
+    return openaiImageUrl;
   }
 
-  // Tier 2: OpenAI DALL-E 3 with style: "natural"
-  const openAiImage = await generateOpenAIImage(prompt);
-  if (openAiImage) {
-    return openAiImage;
-  }
-
-  // Tier 3: Neural Photorealism Engine (flux-realism / flux)
-  const seed = Math.floor(Math.random() * 1000000);
-  const encodedPrompt = encodeURIComponent(prompt);
-
-  const realisticUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&model=flux-realism&seed=${seed}&nologo=true`;
-  const fluxUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&model=flux&seed=${seed}&nologo=true`;
-
-  console.log(`[AI Image] Synthesizing photorealistic Bengali outfit (seed=${seed}, gender=${options.gender}, day=${options.pujaDay})...`);
-
-  const urls = [realisticUrl, fluxUrl];
-  for (const url of urls) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
-
-      if (res.ok) {
-        const buffer = Buffer.from(await res.arrayBuffer());
-        if (buffer.length > 5000) {
-          const filename = `agomoni-ai-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
-          const targetDir = path.resolve(config.UPLOAD_DIR);
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-          }
-          const savePath = path.resolve(targetDir, filename);
-          fs.writeFileSync(savePath, buffer);
-          console.log(`[AI Image] Successfully saved photorealistic output: ${savePath} (${buffer.length} bytes)`);
-          return `/uploads/${filename}`;
-        }
-      }
-    } catch (e: any) {
-      console.warn(`[AI Image] Download from ${url.slice(0, 45)}... failed:`, e?.message || e);
+  try {
+    const localOpenAIPath = await ensureLocalImage(openaiImageUrl);
+    if (!localOpenAIPath || !fs.existsSync(localOpenAIPath)) {
+      return openaiImageUrl;
     }
-  }
 
-  // Tier 4: Fallback to authentic pre-rendered DSLR Bengali festival photograph (NEVER cartoon!)
-  console.log('[AI Image] Fetch timed out, selecting authentic high-resolution Bengali festive photograph template...');
-  const isFemale = options.gender === 'FEMALE';
+    console.log(`[Secondary Model] Performing subtle detail enhancement on ${localOpenAIPath}...`);
+    // If enhancement is configured, it would enhance subtle skin pores/resolution
+    // For now, safely preserve the authentic OpenAI output:
+    return openaiImageUrl;
+  } catch (secErr) {
+    console.warn('[Secondary Model] Enhancement error, returning original OpenAI image safely:', secErr);
+    return openaiImageUrl;
+  }
+}
+
+/**
+ * CONFIGURED PHOTOREALISTIC FALLBACK:
+ * Executes only if OpenAI image transformation fails.
+ * Maps user's facial identity onto authentic high-resolution Bengali Durga Puja
+ * Ashtami photographs, completely avoiding cartoon/anime/CGI artifacts.
+ */
+export async function executeFallbackPhotorealisticStyling(
+  sourceLocalPath: string,
+  options: OutfitGenerationInput
+): Promise<string | null> {
+  const isCouple = options.gender === 'COUPLE';
+  const isMale = options.gender === 'MALE';
   const isModern = options.style === 'Modern' || options.style === 'Casual Puja' || options.style === 'Night Puja';
 
-  const templateRelative = isFemale
-    ? (isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg')
-    : (isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg');
+  let templateRelative = '';
+  if (isCouple) {
+    templateRelative = 'uploads/outfits/couple-traditional.jpg';
+  } else if (isMale) {
+    templateRelative = isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg';
+  } else {
+    templateRelative = isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg';
+  }
 
   const candidateTemplatePaths = [
     path.resolve(process.cwd(), templateRelative),
@@ -352,124 +363,132 @@ export async function generateNeuralOutfitImage(options: {
     path.resolve(localDir, '../../../..', templateRelative),
   ];
 
-  for (const tPath of candidateTemplatePaths) {
-    if (fs.existsSync(tPath)) {
-      try {
-        const filename = `agomoni-festive-${Date.now()}.jpg`;
-        const destPath = path.resolve(config.UPLOAD_DIR, filename);
-        fs.copyFileSync(tPath, destPath);
-        console.log(`[AI Image] Copied authentic DSLR photo template: ${destPath}`);
-        return `/uploads/${filename}`;
-      } catch (copyErr) {
-        console.warn('[AI Image] Template copy error:', copyErr);
-      }
-    }
+  const templatePath = candidateTemplatePaths.find((p) => fs.existsSync(p));
+  if (!templatePath) {
+    console.warn('[Fallback Stylist] Authentic photo template not found:', templateRelative);
+    return null;
   }
 
-  return realisticUrl;
+  const targetDir = path.resolve(config.UPLOAD_DIR);
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
+
+  const stylistFilename = `agomoni-festive-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+  const stylistLocalPath = path.resolve(targetDir, stylistFilename);
+
+  console.log(`[Fallback Stylist] Transferring facial identity onto authentic template: ${templatePath}...`);
+  const swapped = await executeLocalNeuralFaceSwap(sourceLocalPath, templatePath, stylistLocalPath);
+
+  if (swapped && fs.existsSync(stylistLocalPath)) {
+    console.log('[Fallback Stylist] Photorealistic fallback completed successfully:', stylistLocalPath);
+    return `/uploads/${stylistFilename}`;
+  }
+
+  // If face transfer is unavailable, copy the authentic high-resolution template
+  fs.copyFileSync(templatePath, stylistLocalPath);
+  return `/uploads/${stylistFilename}`;
 }
 
-// Development / Fallback High-Fidelity Bengali AI Provider
-export class DevelopmentMockProvider implements IAIProvider {
+/**
+ * PRIMARY OUTFIT PROVIDER:
+ * Strict priority pipeline:
+ * 1. User uploads photo
+ * 2. OpenAI Image Model — PRIMARY GENERATOR
+ * 3. Generated realistic image
+ * 4. Optional Secondary AI Model (only if configured and safe)
+ * 5. Final realistic photograph
+ *
+ * Fault tolerance:
+ * - OpenAI succeeds -> return OpenAI image (optionally enhanced)
+ * - OpenAI fails -> use configured photorealistic fallback model
+ */
+export class OpenAIFirstOutfitProvider implements IAIProvider {
   async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
-    const isFemale = input.gender === 'FEMALE';
-    const isMale = input.gender === 'MALE';
-    const isModern = input.style === 'Modern' || input.style === 'Casual Puja';
-    const isNight = input.style === 'Night Puja';
+    console.log(`\n========================================`);
+    console.log(`[Agomoni AI] Outfit generation requested for user: ${input.userId}`);
+    console.log(`[Agomoni AI] Gender: ${input.gender}, Day: ${input.pujaDay}, Style: ${input.style}`);
+    console.log(`========================================\n`);
 
-    let styleDescriptionEnglish = 'Traditional Bengali Lal-Paar Garad Saree with authentic gold jewelry, alta, and red bindi.';
-    let styleDescriptionBengali = 'ঐতিহ্যবাহী লাল-পাড় গরদ শাড়ি, গালে চন্দনের ছোঁয়া, আলতা রাঙা হাত আর উজ্জ্বল লাল টিপ। অষ্টমীর অঞ্জলির জন্য সেরা সাজ।';
-    let colorPalette = ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Kash Cream)'];
-    let stylingTips = [
-      'Complete the look with traditional shankha-pola and subtle gold accents.',
-      'Apply a touch of sandalwood paste (chondon) on forehead for Ashtami morning.',
-      'Pair with a classic embroidered potli bag.',
-    ];
+    // 1. Resolve source image to disk
+    const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
 
-    if (isMale) {
-      if (isModern || isNight) {
-        styleDescriptionEnglish = 'Contemporary Indo-Western Nehru jacket ensemble with embroidered mandarin collar for evening pandal hopping.';
-        styleDescriptionBengali = 'আধুনিক ইন্দো-ওয়েস্টার্ন জহর কোট ও ফ্যাশনেবল কুর্তা সেট। নবমী বা সান্ধ্য প্যান্ডেল হপিংয়ের জন্য অত্যন্ত মানানসই।';
-        colorPalette = ['#1A2B4C (Midnight Navy)', '#D4AF37 (Antique Gold)', '#E0D6C3 (Silk Ivory)'];
-        stylingTips = [
-          'Pair with leather loafers or handcrafted mojaris.',
-          'Roll sleeves neatly with minimal wristwatch accessory.',
-          'Comfortable for walking and long pandal hopping routes.',
-        ];
+    let resultImageUrl: string | null = null;
+
+    // 2. OpenAI Image Model — PRIMARY GENERATOR
+    if (sourceLocalPath && fs.existsSync(sourceLocalPath)) {
+      console.log('[Agomoni AI] STEP 1: Attempting OpenAI Image Model as PRIMARY GENERATOR...');
+      const openAiImage = await transformWithOpenAI(sourceLocalPath, input);
+
+      if (openAiImage) {
+        console.log('[Agomoni AI] OpenAI successfully generated realistic transformed photograph!');
+        // 3. Optional secondary enhancement (if configured)
+        resultImageUrl = await enhanceWithSecondaryModel(openAiImage, input);
       } else {
-        styleDescriptionEnglish = 'Handloom Tussar Silk Kurta (Panjabi) with royal Maroon Dhuti and heritage gold-embroidered Nehru vest.';
-        styleDescriptionBengali = 'হাতে বোনা তসর সিল্কের পাঞ্জাবি, মেরুন ধুতি আর সোনালী জরির জহর কোট। পুজো প্যান্ডেলে রাজকীয় ঐতিহ্যবাহী উপস্থিতি।';
-        colorPalette = ['#6B1D2F (Heritage Maroon)', '#D4AF37 (Royal Gold)', '#FFF8DC (Cornsilk)'];
-        stylingTips = [
-          'Classic pleated dhuti with contrasting border.',
-          'Handmade Kolhapuri or Bengali Nagra shoes.',
-          'Traditional silk uttorio (stole) draped over the shoulder.',
-        ];
-      }
-    } else if (isFemale) {
-      if (isModern) {
-        styleDescriptionEnglish = 'Contemporary fusion drape saree with chic designer blouse and statement temple jewellery.';
-        styleDescriptionBengali = 'ফিউশন ডিজাইনার লুক—আধুনিক শৈলী আর ঐতিহ্যবাহী গহনার নিখুঁত মেলবন্ধন।';
-        colorPalette = ['#2C1654 (Royal Purple)', '#D4AF37 (Muted Gold)', '#FF8C00 (Festive Amber)'];
-        stylingTips = [
-          'Statement oxidised silver or temple earrings.',
-          'Sleek hair bun with jasmine floral gajra.',
-          'Comfortable block heels for easy pandal exploration.',
-        ];
-      } else if (isNight) {
-        styleDescriptionEnglish = 'Midnight festive silk ensemble with subtle zari work, tailor-made for evening lighting and pandal tours.';
-        styleDescriptionBengali = 'নাইট প্যান্ডেল হপিংয়ের জন্য জমকালো শেডের সিল্ক শাড়ি ও সূক্ষ্ম জরির কাজ। রাতের আলোয় অসাধারণ উজ্জ্বলতা।';
-        colorPalette = ['#101820 (Midnight Black)', '#F2AA4C (Warm Gold)', '#800020 (Burgundy)'];
-        stylingTips = [
-          'Smokey eye makeup and deep maroon lipstick.',
-          'Layered choker necklace with matching bangles.',
-          'Compact metallic clutch to keep essentials safe in crowds.',
-        ];
+        console.warn('[Agomoni AI] OpenAI generation did not produce an image. Triggering configured fallback...');
       }
     }
 
-    // Always generate an authentic photorealistic real image
-    let resultImageUrl = await generateNeuralOutfitImage({
-      gender: input.gender,
-      style: input.style,
-      pujaDay: input.pujaDay,
-      userPrompt: input.prompt,
-    });
+    // 4. Configured Fallback (only if OpenAI generation fails)
+    if (!resultImageUrl && sourceLocalPath && fs.existsSync(sourceLocalPath)) {
+      console.log('[Agomoni AI] STEP 2: Running configured photorealistic fallback model...');
+      resultImageUrl = await executeFallbackPhotorealisticStyling(sourceLocalPath, input);
+    }
 
-    // If user provided a photo, ensure local path and try Bengali AI Stylist (IDM-VTON / PhotoMaker / InstantID)
-    try {
-      const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
-      if (sourceLocalPath && fs.existsSync(sourceLocalPath)) {
-        const stylistFilename = `agomoni-stylist-${Date.now()}.jpg`;
-        const stylistLocalPath = path.resolve(config.UPLOAD_DIR, stylistFilename);
-        console.log(`[DevelopmentMockProvider] Running Bengali AI Stylist for ${sourceLocalPath}...`);
-        const ok = await executeBengaliAIStylist(sourceLocalPath, input.gender, input.style, input.pujaDay, stylistLocalPath, input.aiMode);
-        if (ok && fs.existsSync(stylistLocalPath)) {
-          resultImageUrl = `/uploads/${stylistFilename}`;
-        } else {
-          const isFemale = input.gender === 'FEMALE';
-          const isModern = input.style === 'Modern' || input.style === 'Casual Puja' || input.style === 'Night Puja';
-          const templateRelative = isFemale
-            ? (isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg')
-            : (isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg');
-          const candidateTemplatePaths = [
-            path.resolve(process.cwd(), templateRelative),
-            path.resolve(process.cwd(), 'apps/api', templateRelative),
-            path.resolve(localDir, '../../..', templateRelative),
-            path.resolve(localDir, '../../../..', templateRelative),
-          ];
-          const templatePath = candidateTemplatePaths.find((p) => fs.existsSync(p));
-          if (templatePath) {
-            console.log(`[DevelopmentMockProvider] Direct faceswap fallback onto template: ${templatePath}...`);
-            const swapped = await executeLocalNeuralFaceSwap(sourceLocalPath, templatePath, stylistLocalPath);
-            if (swapped && fs.existsSync(stylistLocalPath)) {
-              resultImageUrl = `/uploads/${stylistFilename}`;
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Bengali AI Stylist execution error in mock provider:', e);
+    // 5. If everything failed, provide safe authentic festive photo
+    if (!resultImageUrl) {
+      const isCouple = input.gender === 'COUPLE';
+      const isMale = input.gender === 'MALE';
+      const defaultPath = isCouple
+        ? '/outfits/couple-traditional.jpg'
+        : isMale
+        ? '/outfits/male-traditional.jpg'
+        : '/outfits/female-traditional.jpg';
+      resultImageUrl = defaultPath;
+    }
+
+    // 6. Cultural styling descriptions and tips
+    const isCouple = input.gender === 'COUPLE';
+    const isMale = input.gender === 'MALE';
+
+    let styleDescriptionBengali = '';
+    let styleDescriptionEnglish = '';
+    let colorPalette: string[] = [];
+    let stylingTips: string[] = [];
+
+    if (isCouple) {
+      styleDescriptionBengali =
+        'অষ্টমীর পুজো মণ্ডপে ঐতিহ্যবাহী যুগল সাজ—তসর সিল্কের সুবিন্যস্ত পাঞ্জাবি, ধুতি ও লাল-পাড় গরদ শাড়ির নিখুঁত সমন্বয়। দেবীর সান্নিধ্যে রাজকীয় উৎসবের আবহ।';
+      styleDescriptionEnglish =
+        'A harmonious traditional Bengali couple ensemble for Ashtami: handloom tussar silk Panjabi with pleated dhoti paired with an authentic white and crimson Garad silk saree.';
+      colorPalette = ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Garad Ivory)'];
+      stylingTips = [
+        'Coordinate the red embroidery on the Panjabi with the red border of the saree.',
+        'Pair with authentic handcrafted Kolhapuri or Nagra footwear for comfort in pandals.',
+        'Subtle gold jewelry and a delicate round bindi complete the sacred festive charm.',
+      ];
+    } else if (isMale) {
+      styleDescriptionBengali =
+        'হাতে বোনা তসর সিল্কের পাঞ্জাবি, রাজকীয় মেরুন সুতোর সূক্ষ্ম কাজ, ঐতিহ্যবাহী কুঁচি দেওয়া ধুতি আর উত্তরীয়। পুজো মণ্ডপে খাঁটি বাঙালি উৎসবের আভিজাত্য।';
+      styleDescriptionEnglish =
+        'Handcrafted Tussar Silk Panjabi with subtle crimson embroidery, traditional pleated dhoti, and red-gold bordered uttoriyo stole.';
+      colorPalette = ['#6B1D2F (Heritage Maroon)', '#D4AF37 (Royal Gold)', '#FFF8DC (Cornsilk Ivory)'];
+      stylingTips = [
+        'Drape the uttoriyo stole neatly over the left shoulder for an aristocratic festive look.',
+        'Classic pleated dhoti with contrasting border for authentic Ashtami styling.',
+        'Handmade leather mojaris or Kolhapuris for effortless pandal hopping.',
+      ];
+    } else {
+      styleDescriptionBengali =
+        'ঐতিহ্যবাহী লাল-পাড় গরদ শাড়ি, খাঁটি সোনার সাবেকি গহনা, হাতে শাঁখা-পলা আর উজ্জ্বল লাল টিপ। অষ্টমীর অঞ্জলির জন্য পরম শ্রদ্ধার সাজ।';
+      styleDescriptionEnglish =
+        'Traditional Bengali Lal-Paar Garad Silk Saree with rich gold zari border, heirloom gold jewelry, shankha-pola, and red bindi.';
+      colorPalette = ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Kash Cream)'];
+      stylingTips = [
+        'Complete the festive look with traditional shankha-pola and heirloom gold jhumkas.',
+        'Apply a touch of sandalwood paste (chondon) along eyebrows for Ashtami morning.',
+        'Pair with an embroidered velvet potli bag for puja essentials.',
+      ];
     }
 
     return {
@@ -480,311 +499,6 @@ export class DevelopmentMockProvider implements IAIProvider {
       stylingTips,
     };
   }
-}
-
-// Qwen Image Model Provider (Alibaba Cloud DashScope / SiliconFlow)
-export class QwenImageProvider implements IAIProvider {
-  private fallbackProvider = new DevelopmentMockProvider();
-
-  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
-    const apiKey = (config as any).QWEN_IMAGE_API_KEY || config.QWEN_API_KEY || process.env.QWEN_IMAGE_API_KEY || config.AI_API_KEY;
-
-    if (!apiKey) {
-      console.warn('QWEN_API_KEY not set in .env, generating with neural diffusion engine');
-      return this.fallbackProvider.generateOutfit(input);
-    }
-
-    try {
-      const { prompt } = buildBengaliPhotorealisticPrompt({
-        gender: input.gender,
-        style: input.style,
-        pujaDay: input.pujaDay,
-        userPrompt: input.prompt,
-      });
-
-      const baseUrl = config.QWEN_BASE_URL || 'https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis';
-      const isSiliconFlow = baseUrl.includes('siliconflow') || baseUrl.includes('/v1/images/generations');
-
-      let generatedImageUrl: string | null = null;
-
-      if (isSiliconFlow) {
-        const endpoint = baseUrl.endsWith('/v1/images/generations') ? baseUrl : `${baseUrl.replace(/\/+$/, '')}/v1/images/generations`;
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: config.QWEN_MODEL || 'Qwen/Qwen-Image',
-            prompt,
-            image_size: '1024x1024',
-          }),
-        });
-
-        if (res.ok) {
-          const data = (await res.json()) as any;
-          generatedImageUrl = data.data?.[0]?.url || data.images?.[0]?.url;
-        } else {
-          console.error('SiliconFlow Qwen API error:', res.status, await res.text());
-        }
-      } else {
-        const res = await fetch(baseUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-            'X-DashScope-Async': 'disable',
-          },
-          body: JSON.stringify({
-            model: config.QWEN_MODEL || 'wanx-v1',
-            input: {
-              prompt,
-              ref_img: input.inputImageUrl.startsWith('http') ? input.inputImageUrl : undefined,
-            },
-            parameters: {
-              style: '<auto>',
-              size: '1024*1024',
-              n: 1,
-            },
-          }),
-        });
-
-        if (res.ok) {
-          const data = (await res.json()) as any;
-          generatedImageUrl = data.output?.results?.[0]?.url;
-        } else {
-          console.error('DashScope Qwen Image API error:', res.status, await res.text());
-        }
-      }
-
-      if (generatedImageUrl) {
-        const fallback = await this.fallbackProvider.generateOutfit(input);
-        return {
-          resultImageUrl: generatedImageUrl,
-          styleDescriptionBengali: fallback.styleDescriptionBengali,
-          styleDescriptionEnglish: fallback.styleDescriptionEnglish,
-          colorPalette: fallback.colorPalette,
-          stylingTips: fallback.stylingTips,
-        };
-      }
-    } catch (err) {
-      console.error('Qwen generation network error, utilizing neural diffusion fallback', err);
-    }
-
-    return this.fallbackProvider.generateOutfit(input);
-  }
-}
-
-// Gemini Vision & Multimodal Fashion Transformation Provider
-export class GeminiOutfitProvider implements IAIProvider {
-  private fallbackProvider = new DevelopmentMockProvider();
-
-  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
-    const apiKey = config.AI_API_KEY || config.GEMINI_API_KEY;
-
-    // 1. Resolve source image to disk immediately
-    let sourceLocalPath: string | null = null;
-    let imagePart: { inlineData: { mimeType: string; data: string } } | null = null;
-
-    try {
-      sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
-      if (sourceLocalPath && fs.existsSync(sourceLocalPath)) {
-        const buf = fs.readFileSync(sourceLocalPath);
-        const ext = path.extname(sourceLocalPath).toLowerCase().replace('.', '');
-        const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
-        imagePart = { inlineData: { mimeType, data: buf.toString('base64') } };
-      }
-    } catch (imgErr) {
-      console.warn('Could not prepare user photo for Gemini Vision analysis', imgErr);
-    }
-
-    let parsed: any = {};
-
-    // 2. Query Gemini for deep Bengali fashion styling & persona
-    if (apiKey) {
-      try {
-        const prompt = `You are a world-class celebrity stylist specialized in Bengali Durga Puja fashion.
-Analyze the user requirements and photo (if provided):
-- Gender: ${input.gender}
-- Puja Day: ${input.pujaDay}
-- Style Motif: ${input.style}
-${input.prompt ? `- User Preferences: ${input.prompt}` : ''}
-
-Respond with a JSON object containing:
-1. personDescription: A concise 1-sentence visual description of the person in the photo (approximate age, skin tone, hair style, facial structure, expression) for a photorealistic DSLR camera portrait. If no photo is present, describe an authentic charming real Bengali festive model.
-2. styleDescriptionBengali: 2-3 culturally poetic sentences in Bengali describing the attire, fabric, drape, and why it fits this Puja day.
-3. styleDescriptionEnglish: 2 sentences in English describing the complete look.
-4. colorPalette: Array of 3 distinct color names with hex codes (e.g. ["#6B1D2F (Heritage Maroon)", ...]).
-5. stylingTips: Array of 3 expert practical styling tips (jewelry, shoes, uttariya/stole, or grooming).
-
-Return ONLY valid JSON.`;
-
-        const contents: any[] = [];
-        const parts: any[] = [];
-        if (imagePart) {
-          parts.push(imagePart);
-        }
-        parts.push({ text: prompt });
-        contents.push({ parts });
-
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
-        const geminiRes = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents,
-            generationConfig: { responseMimeType: 'application/json' },
-          }),
-        });
-
-        if (geminiRes.ok) {
-          const geminiData = (await geminiRes.json()) as any;
-          const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) parsed = JSON.parse(text);
-        } else {
-          console.warn('Gemini flash returned status:', geminiRes.status);
-        }
-      } catch (gErr) {
-        console.warn('Gemini vision description call error:', gErr);
-      }
-    }
-
-    // 3. Generate photorealistic Bengali attire (cascading through Hugging Face, OpenAI, and Neural Realism)
-    let resultImageUrl = await generateNeuralOutfitImage({
-      gender: input.gender,
-      style: input.style,
-      pujaDay: input.pujaDay,
-      userPrompt: input.prompt,
-      facialDescription: parsed.personDescription,
-    });
-
-    // 4. If source photo exists on disk, run identity-preserving Bengali AI Stylist (IDM-VTON / PhotoMaker / InstantID / FaceSwap)
-    if (sourceLocalPath && fs.existsSync(sourceLocalPath)) {
-      try {
-        const stylistFilename = `agomoni-stylist-${Date.now()}.jpg`;
-        const stylistLocalPath = path.resolve(config.UPLOAD_DIR, stylistFilename);
-        console.log(`[GeminiOutfitProvider] Launching Bengali AI Stylist for ${sourceLocalPath} with mode=${input.aiMode || 'auto'}...`);
-        const styled = await executeBengaliAIStylist(sourceLocalPath, input.gender, input.style, input.pujaDay, stylistLocalPath, input.aiMode);
-        if (styled && fs.existsSync(stylistLocalPath)) {
-          resultImageUrl = `/uploads/${stylistFilename}`;
-          console.log('[GeminiOutfitProvider] Successfully generated personalized real Bengali portrait:', resultImageUrl);
-        } else {
-          const isFemale = input.gender === 'FEMALE';
-          const isModern = input.style === 'Modern' || input.style === 'Casual Puja' || input.style === 'Night Puja';
-          const templateRelative = isFemale
-            ? (isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg')
-            : (isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg');
-          const candidateTemplatePaths = [
-            path.resolve(process.cwd(), templateRelative),
-            path.resolve(process.cwd(), 'apps/api', templateRelative),
-            path.resolve(localDir, '../../..', templateRelative),
-            path.resolve(localDir, '../../../..', templateRelative),
-          ];
-          const templatePath = candidateTemplatePaths.find((p) => fs.existsSync(p));
-          if (templatePath) {
-            console.log(`[GeminiOutfitProvider] Direct faceswap fallback onto template: ${templatePath}...`);
-            const swapped = await executeLocalNeuralFaceSwap(sourceLocalPath, templatePath, stylistLocalPath);
-            if (swapped && fs.existsSync(stylistLocalPath)) {
-              resultImageUrl = `/uploads/${stylistFilename}`;
-            }
-          }
-        }
-      } catch (stylistErr) {
-        console.warn('[GeminiOutfitProvider] Bengali AI Stylist step failed, keeping photorealistic neural generation:', stylistErr);
-      }
-    }
-
-    const defaultBengali = input.gender === 'MALE'
-      ? 'হাতে বোনা তসর সিল্কের পাঞ্জাবি, মেরুন ধুতি আর সোনালী জরির জহর কোট। পুজো প্যান্ডেলে রাজকীয় ঐতিহ্যবাহী উপস্থিতি।'
-      : 'ঐতিহ্যবাহী লাল-পাড় গরদ শাড়ি, গালে চন্দনের ছোঁয়া, আলতা রাঙা হাত আর উজ্জ্বল লাল টিপ। অষ্টমীর অঞ্জলির জন্য সেরা সাজ।';
-    const defaultEnglish = input.gender === 'MALE'
-      ? 'Handloom Tussar Silk Kurta (Panjabi) with royal Maroon Dhuti and heritage gold-embroidered Nehru vest.'
-      : 'Traditional Bengali Lal-Paar Garad Saree with gold jewelry, alta, and red bindi.';
-
-    return {
-      resultImageUrl,
-      styleDescriptionBengali: parsed.styleDescriptionBengali || defaultBengali,
-      styleDescriptionEnglish: parsed.styleDescriptionEnglish || defaultEnglish,
-      colorPalette: parsed.colorPalette || ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Kash Cream)'],
-      stylingTips: parsed.stylingTips || [
-        'Complete the look with traditional jewelry and subtle gold accents.',
-        'Apply a touch of sandalwood paste (chondon) on forehead for puja morning.',
-        'Pair with comfortable handcrafted footwear for pandal hopping.',
-      ],
-    };
-  }
-}
-
-// Unified Bengali AI Stylist Runner (IDM-VTON / PhotoMaker / InstantID / FaceRestore)
-export async function executeBengaliAIStylist(
-  sourceImagePath: string,
-  gender: string,
-  style: string,
-  pujaDay: string,
-  outputImagePath: string,
-  aiMode: string = 'auto'
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    // Dynamically locate bengali_ai_stylist.py across potential working directory structures
-    const candidateScriptPaths = [
-      path.resolve(process.cwd(), 'apps/api/scripts/bengali_ai_stylist.py'),
-      path.resolve(process.cwd(), 'scripts/bengali_ai_stylist.py'),
-      path.resolve(localDir, '../../scripts/bengali_ai_stylist.py'),
-      path.resolve(localDir, '../../../scripts/bengali_ai_stylist.py'),
-      path.resolve(localDir, '../../../../scripts/bengali_ai_stylist.py'),
-    ];
-
-    const scriptPath = candidateScriptPaths.find((p) => fs.existsSync(p));
-
-    if (!scriptPath) {
-      console.warn('[BengaliStylist] Script bengali_ai_stylist.py not found in any candidate path:', candidateScriptPaths);
-      return resolve(false);
-    }
-
-    if (!fs.existsSync(sourceImagePath)) {
-      console.warn('[BengaliStylist] Source image not found at', sourceImagePath);
-      return resolve(false);
-    }
-
-    console.log(`[BengaliStylist] Invoking unified multi-model styling pipeline using ${scriptPath} (mode=${aiMode})...`);
-
-    const hfToken = config.HF_TOKEN || config.HUGGINGFACE_API_KEY || process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || '';
-
-    const py = spawn('python3', [
-      scriptPath,
-      '--source', sourceImagePath,
-      '--gender', gender,
-      '--style', style,
-      '--day', pujaDay,
-      '--mode', aiMode,
-      '--output', outputImagePath,
-    ], {
-      env: {
-        ...process.env,
-        HF_TOKEN: hfToken,
-        HUGGINGFACE_API_KEY: hfToken,
-      },
-    });
-
-    py.stdout.on('data', (data) => console.log(`[BengaliStylist py] ${data.toString().trim()}`));
-    py.stderr.on('data', (data) => console.error(`[BengaliStylist py err] ${data.toString().trim()}`));
-
-    py.on('close', (code) => {
-      if (code === 0 && fs.existsSync(outputImagePath)) {
-        console.log('[BengaliStylist] Styling completed successfully!');
-        resolve(true);
-      } else {
-        console.warn(`[BengaliStylist] Styling process exited with code ${code}`);
-        resolve(false);
-      }
-    });
-
-    py.on('error', (err) => {
-      console.error('[BengaliStylist] Failed to start python process', err);
-      resolve(false);
-    });
-  });
 }
 
 /**
@@ -816,16 +530,8 @@ export async function executeLocalNeuralFaceSwap(
       return resolve(false);
     }
 
-    const hfToken = config.HF_TOKEN || config.HUGGINGFACE_API_KEY || process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || '';
-
     console.log(`[FaceSwap] Transferring facial identity using ${scriptPath}...`);
-    const py = spawn('python3', [scriptPath, sourceImagePath, targetImagePath, outputImagePath], {
-      env: {
-        ...process.env,
-        HF_TOKEN: hfToken,
-        HUGGINGFACE_API_KEY: hfToken,
-      },
-    });
+    const py = spawn('python3', [scriptPath, sourceImagePath, targetImagePath, outputImagePath]);
 
     py.stdout.on('data', (d) => console.log(`[FaceSwap py] ${d.toString().trim()}`));
     py.stderr.on('data', (d) => console.error(`[FaceSwap py err] ${d.toString().trim()}`));
@@ -847,25 +553,99 @@ export async function executeLocalNeuralFaceSwap(
   });
 }
 
-// Factory to pick the appropriate AI provider
+/**
+ * Unified Bengali AI Stylist Runner (IDM-VTON / PhotoMaker / InstantID / FaceRestore)
+ */
+export async function executeBengaliAIStylist(
+  sourceImagePath: string,
+  gender: string,
+  style: string,
+  pujaDay: string,
+  outputImagePath: string,
+  aiMode: string = 'auto'
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const candidateScriptPaths = [
+      path.resolve(process.cwd(), 'apps/api/scripts/bengali_ai_stylist.py'),
+      path.resolve(process.cwd(), 'scripts/bengali_ai_stylist.py'),
+      path.resolve(localDir, '../../scripts/bengali_ai_stylist.py'),
+      path.resolve(localDir, '../../../scripts/bengali_ai_stylist.py'),
+      path.resolve(localDir, '../../../../scripts/bengali_ai_stylist.py'),
+    ];
+
+    const scriptPath = candidateScriptPaths.find((p) => fs.existsSync(p));
+
+    if (!scriptPath || !fs.existsSync(sourceImagePath)) {
+      return resolve(false);
+    }
+
+    const py = spawn('python3', [
+      scriptPath,
+      '--source', sourceImagePath,
+      '--gender', gender,
+      '--style', style,
+      '--day', pujaDay,
+      '--mode', aiMode,
+      '--output', outputImagePath,
+    ]);
+
+    py.on('close', (code) => {
+      resolve(code === 0 && fs.existsSync(outputImagePath));
+    });
+
+    py.on('error', () => {
+      resolve(false);
+    });
+  });
+}
+
+/**
+ * Legacy prompt builder helper maintained for backward compatibility
+ */
+export function buildBengaliPhotorealisticPrompt(options: {
+  gender: string;
+  style: string;
+  pujaDay: string;
+  userPrompt?: string;
+  facialDescription?: string;
+}): { prompt: string; negativePrompt: string } {
+  const prompt = buildMasterOpenAIPrompt(options);
+  const negativePrompt =
+    'cartoon, anime, 3d render, cgi, illustration, painting, drawing, sketch, artwork, digital art, doll, plastic skin, airbrushed, fake, smooth doll skin, oversaturated, deformed, bad anatomy, disfigured face, bad eyes, unnatural skin, text, watermark';
+  return { prompt, negativePrompt };
+}
+
+/**
+ * Legacy OpenAI helper maintained for backward compatibility
+ */
+export async function generateOpenAIImage(prompt: string): Promise<string | null> {
+  const apiKey =
+    (config as any).GPT_IMAGE_API_KEY ||
+    config.OPENAI_API_KEY ||
+    process.env.GPT_IMAGE_API_KEY ||
+    process.env.OPENAI_API_KEY;
+
+  if (!apiKey) return null;
+
+  try {
+    const client = new OpenAI({ apiKey });
+    const response = await client.images.generate({
+      model: (config as any).GPT_IMAGE_MODEL || 'dall-e-3',
+      prompt,
+      n: 1,
+      size: '1024x1024',
+    });
+    return response.data?.[0]?.url || null;
+  } catch (e: any) {
+    console.warn('[OpenAI] Generation error:', e?.message || e);
+    return null;
+  }
+}
+
+/**
+ * Factory to pick the appropriate AI provider.
+ * OpenAI is ALWAYS PRIMARY.
+ */
 export function getAIProvider(): IAIProvider {
-  // If user requested or configured Hugging Face, OpenAI, or Gemini, route through GeminiOutfitProvider
-  // which integrates Hugging Face FLUX.1-schnell and OpenAI DALL-E 3
-  if (
-    config.AI_PROVIDER === 'HUGGINGFACE' ||
-    config.AI_PROVIDER === 'OPENAI' ||
-    config.AI_PROVIDER === 'GEMINI' ||
-    config.AI_PROVIDER === 'AUTO' ||
-    Boolean(config.HF_TOKEN || config.HUGGINGFACE_API_KEY) ||
-    Boolean(config.OPENAI_API_KEY) ||
-    Boolean(config.AI_API_KEY || config.GEMINI_API_KEY)
-  ) {
-    return new GeminiOutfitProvider();
-  }
-
-  if (config.AI_PROVIDER === 'QWEN' || Boolean(config.QWEN_API_KEY)) {
-    return new QwenImageProvider();
-  }
-
-  return new DevelopmentMockProvider();
+  return new OpenAIFirstOutfitProvider();
 }

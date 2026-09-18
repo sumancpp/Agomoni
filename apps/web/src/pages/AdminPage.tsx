@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
-import { apiFetch } from '../lib/api';
+import { apiFetch, resolveImageUrl } from '../lib/api';
 
 export const AdminPage: React.FC = () => {
   const { token, user } = useAuth();
@@ -448,7 +448,7 @@ export const AdminPage: React.FC = () => {
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full overflow-hidden bg-night-800 border border-gold-500/30 flex items-center justify-center shrink-0">
                                 {u.avatarUrl ? (
-                                  <img src={u.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                  <img src={resolveImageUrl(u.avatarUrl)} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                 ) : (
                                   <span className="text-xs font-bold text-gold-400">
                                     {(u.displayName || u.email)[0].toUpperCase()}
@@ -674,7 +674,7 @@ export const AdminPage: React.FC = () => {
                   <div className="flex items-start gap-4">
                     {post.photoUrl ? (
                       <div className="w-20 h-20 rounded-2xl overflow-hidden bg-night-950 border border-gold-500/30 shrink-0">
-                        <img src={post.photoUrl} alt="" className="w-full h-full object-cover" />
+                        <img src={resolveImageUrl(post.photoUrl)} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       </div>
                     ) : (
                       <div className="w-20 h-20 rounded-2xl bg-night-950 border border-gold-500/20 flex items-center justify-center text-3xl shrink-0">

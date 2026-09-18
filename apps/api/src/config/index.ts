@@ -18,6 +18,7 @@ const envSchema = z.object({
   AI_PROVIDER: z.enum(['DEVELOPMENT_MOCK', 'AUTO', 'HUGGINGFACE', 'OPENAI', 'GEMINI', 'CLAUDE', 'QWEN', 'REPLICATE']).default('AUTO'),
   AI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY_2: z.string().optional(),
   HF_TOKEN: z.string().optional(),
   HUGGINGFACE_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),

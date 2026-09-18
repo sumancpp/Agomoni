@@ -5,7 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { completePayment } from '../lib/payments';
-import { apiFetch } from '../lib/api';
+import { apiFetch, resolveImageUrl } from '../lib/api';
 
 interface Post {
   id: string;
@@ -479,7 +479,7 @@ export const LostFoundPage: React.FC = () => {
               {/* Photo & Badge */}
               <div className="relative h-56 w-full bg-night-850 overflow-hidden">
                 {post.photoUrl ? (
-                  <img src={post.photoUrl} alt={post.nameOrItem} className="w-full h-full object-cover" />
+                  <img src={resolveImageUrl(post.photoUrl)} alt={post.nameOrItem} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-4xl bg-night-900">
                     {post.category === 'LOST_PERSON' ? '🧒' : '🎒'}
@@ -952,7 +952,7 @@ export const LostFoundPage: React.FC = () => {
                 {photoUrl ? (
                   <div className="rounded-2xl overflow-hidden border border-gold-500/40 bg-night-950 p-2.5 flex items-center gap-3">
                     <img
-                      src={photoUrl}
+                      src={resolveImageUrl(photoUrl)}
                       alt="Uploaded preview"
                       className="w-14 h-14 object-cover rounded-xl border border-gold-500/30 flex-shrink-0"
                     />

@@ -105,23 +105,56 @@ const generalLimiter = rateLimit({
 });
 app.use('/api/', generalLimiter);
 
-// Ensure uploads folder exists
-const uploadsDir = path.resolve(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-app.use('/uploads', express.static(uploadsDir));
+// Ensure uploads folders exist and are served robustly across environments
+const candidateUploadDirs = [
+  path.resolve(config.UPLOAD_DIR || 'uploads'),
+  path.resolve(process.cwd(), 'apps/api/uploads'),
+  path.resolve(process.cwd(), 'uploads'),
+  path.resolve(__dirname, '../../uploads'),
+  path.resolve(__dirname, '../../../uploads'),
+  path.resolve(process.cwd(), 'uploads/outfits'),
+  path.resolve(process.cwd(), 'apps/api/uploads/outfits'),
+];
 
-// Fallback: Also serve apps/api/uploads if running from workspace root
-const nestedUploadsDir = path.resolve(process.cwd(), 'apps/api/uploads');
-if (fs.existsSync(nestedUploadsDir) && nestedUploadsDir !== uploadsDir) {
-  app.use('/uploads', express.static(nestedUploadsDir));
+const primaryUploadsDir = candidateUploadDirs[0];
+
+for (const dir of candidateUploadDirs) {
+  if (!fs.existsSync(dir)) {
+    try { fs.mkdirSync(dir, { recursive: true }); } catch {}
+  }
+  if (fs.existsSync(dir)) {
+    app.use('/uploads', express.static(dir));
+  }
 }
+
+// Fallback file resolver for /uploads/:filename to handle multi-directory structures & Render restarts
+app.get('/uploads/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  for (const dir of candidateUploadDirs) {
+    const fullPath = path.resolve(dir, filename);
+    if (fs.existsSync(fullPath)) {
+      return res.sendFile(fullPath);
+    }
+  }
+
+  // Graceful fallback for historical festive/AI outfit files on ephemeral cloud restarts
+  if (filename.includes('agomoni-festive-') || filename.includes('agomoni-ai-') || filename.includes('agomoni-stylist-')) {
+    const isMale = filename.toLowerCase().includes('male');
+    for (const dir of candidateUploadDirs) {
+      const template = path.resolve(dir, isMale ? 'male-traditional.jpg' : 'female-traditional.jpg');
+      if (fs.existsSync(template)) return res.sendFile(template);
+      const nested = path.resolve(dir, isMale ? 'outfits/male-traditional.jpg' : 'outfits/female-traditional.jpg');
+      if (fs.existsSync(nested)) return res.sendFile(nested);
+    }
+  }
+
+  return res.status(404).send('File not found');
+});
 
 // Multer storage for secure image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    cb(null, primaryUploadsDir);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Shield, Lock, Trash2, LogOut, Check, Save, MapPin } from 'lucide-react';
+import { User, Shield, Lock, Trash2, LogOut, Check, Save, MapPin, Camera, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
-import { apiFetch } from '../lib/api';
+import { apiFetch, resolveImageUrl } from '../lib/api';
 
 export const ProfilePage: React.FC = () => {
   const { user, token, logout, refreshUser, isLoading } = useAuth();
@@ -14,10 +14,14 @@ export const ProfilePage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [locationCity, setLocationCity] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [hideProfile, setHideProfile] = useState(false);
   const [isMatchingActive, setIsMatchingActive] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading && !token) {
@@ -28,8 +32,73 @@ export const ProfilePage: React.FC = () => {
       setDisplayName(user.profile.displayName || '');
       setBio(user.profile.bio || '');
       setLocationCity(user.profile.locationCity || '');
+      setAvatarUrl(user.profile.avatarUrl || '');
+      setHideProfile(Boolean(user.profile.hideProfile));
+      setIsMatchingActive(user.profile.isMatchingActive ?? true);
     }
-  }, [user, token]);
+  }, [user, token, isLoading]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (JPG, PNG, WebP)');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Photo must be less than 10MB');
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setImgError(false);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await apiFetch('/api/v1/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.fileUrl) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setAvatarUrl(data.fileUrl);
+
+      // Auto-save to profile immediately
+      const saveRes = await apiFetch('/api/v1/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          avatarUrl: data.fileUrl,
+        }),
+      });
+
+      if (saveRes.ok) {
+        await refreshUser();
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Failed to upload photo');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +114,7 @@ export const ProfilePage: React.FC = () => {
           displayName,
           bio,
           locationCity,
+          avatarUrl: avatarUrl || undefined,
           hideProfile,
           isMatchingActive,
         }),
@@ -86,24 +156,68 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  const currentAvatar = avatarUrl || user?.profile?.avatarUrl;
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Hidden File Input for Avatar Upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleAvatarUpload}
+        accept="image/jpeg,image/png,image/webp,image/jpg"
+        className="hidden"
+      />
+
       {/* Profile Header */}
-      <div className="puja-card p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-sindoor-950 border-2 border-gold-500/40 overflow-hidden flex items-center justify-center text-2xl font-bold text-gold-400">
-            {user?.profile?.avatarUrl ? (
-              <img src={user.profile.avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              displayName.charAt(0) || 'U'
-            )}
+      <div className="puja-card p-6 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+          {/* Avatar with Upload Overlay */}
+          <div className="relative group">
+            <div className="w-20 h-20 rounded-2xl bg-sindoor-950 border-2 border-gold-500/50 overflow-hidden flex items-center justify-center text-3xl font-bold text-gold-400 shadow-lg">
+              {currentAvatar && !imgError ? (
+                <img
+                  src={resolveImageUrl(currentAvatar)}
+                  alt={displayName || 'Profile'}
+                  className="w-full h-full object-cover"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                displayName.charAt(0) || 'U'
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingAvatar}
+              className="absolute -bottom-1.5 -right-1.5 p-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-night-950 shadow-md transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
+              title="Upload Profile Photo"
+            >
+              {isUploadingAvatar ? (
+                <Loader2 size={14} className="animate-spin text-night-950" />
+              ) : (
+                <Camera size={14} className="text-night-950 font-bold" />
+              )}
+            </button>
           </div>
+
           <div>
-            <h1 className="text-xl font-bold text-cream-100 font-cinzel">
-              {displayName || 'Agomoni User'}
-            </h1>
-            <p className="text-xs text-cream-400">{user?.email}</p>
-            <p className="text-xs text-gold-400 flex items-center gap-1 mt-0.5">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-cream-100 font-cinzel">
+                {displayName || 'Agomoni User'}
+              </h1>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="text-[11px] text-gold-400 hover:text-gold-300 underline font-medium"
+              >
+                {isUploadingAvatar ? 'Uploading...' : 'Change Photo'}
+              </button>
+            </div>
+            <p className="text-xs text-cream-400 mt-0.5">{user?.email}</p>
+            <p className="text-xs text-gold-400 flex items-center gap-1 mt-1 justify-center sm:justify-start">
               <MapPin size={12} />
               <span>{locationCity || 'Bengal'}</span>
             </p>
@@ -156,6 +270,45 @@ export const ProfilePage: React.FC = () => {
               <Check size={14} /> Saved!
             </span>
           )}
+        </div>
+
+        <div>
+          <label className="text-cream-300 block mb-1">Profile Photo / প্রোফাইল ছবি</label>
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-night-950 border border-gold-500/20">
+            <div className="w-12 h-12 rounded-xl bg-sindoor-950 border border-gold-500/40 overflow-hidden flex items-center justify-center text-lg font-bold text-gold-400 shrink-0">
+              {currentAvatar && !imgError ? (
+                <img
+                  src={resolveImageUrl(currentAvatar)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                displayName.charAt(0) || 'U'
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingAvatar}
+                className="px-3 py-1.5 rounded-xl bg-gold-500/20 hover:bg-gold-500/30 text-gold-300 border border-gold-500/40 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                {isUploadingAvatar ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={13} />
+                    <span>Upload New Photo</span>
+                  </>
+                )}
+              </button>
+              <p className="text-[10px] text-cream-400 mt-1">Supports JPG, PNG, WebP (Max 10MB)</p>
+            </div>
+          </div>
         </div>
 
         <div>

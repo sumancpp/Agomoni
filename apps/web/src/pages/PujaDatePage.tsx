@@ -22,7 +22,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { completePayment } from '../lib/payments';
-import { apiFetch } from '../lib/api';
+import { apiFetch, resolveImageUrl } from '../lib/api';
 
 const PUJA_DAYS = [
   { id: 'SHASHTI', name: 'Shashti', bengali: 'মহাষষ্ঠী', icon: '🌸' },
@@ -618,9 +618,12 @@ export const PujaDatePage: React.FC = () => {
 
                     {person.avatarUrl ? (
                       <img
-                        src={person.avatarUrl}
+                        src={resolveImageUrl(person.avatarUrl)}
                         alt={person.displayName}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-night-900 to-sindoor-950">
@@ -790,7 +793,7 @@ export const PujaDatePage: React.FC = () => {
                 {formAvatarUrl ? (
                   <div className="rounded-2xl border border-gold-500/40 bg-night-950 p-2.5 flex items-center gap-3">
                     <img
-                      src={formAvatarUrl}
+                      src={resolveImageUrl(formAvatarUrl)}
                       alt="Uploaded avatar preview"
                       className="w-14 h-14 object-cover rounded-full border-2 border-gold-500/40 flex-shrink-0"
                     />
