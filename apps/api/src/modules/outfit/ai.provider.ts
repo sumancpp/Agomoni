@@ -109,12 +109,14 @@ export async function ensureLocalImage(inputUrl: string): Promise<string | null>
 
 /**
  * Constructs the Master OpenAI Image Transformation Prompt adhering strictly to:
- * - Real photograph transformation
- * - Identity preservation (facial structure, proportions, eyes, nose, lips, jawline, hair, beard, glasses, skin tone, age)
- * - Authentic Bengali Durga Puja Ashtami attire
- * - Durga Puja Pandal environment with Goddess Durga idol in the background
- * - Professional DSLR portrait photography optics & realistic lighting
- * - Strict avoidance of anime, cartoon, illustration, CGI, 3D render, doll skin, AI filters
+ * - Real photograph in-place transformation (NOT text-to-image generation)
+ * - Source image as absolute visual truth: identity, geometry, pose, body, face, framing, perspective
+ * - Strict facial identity preservation: face is an immutable part of the source photograph
+ * - Do NOT create a new person or generic model (no "handsome model" descriptions)
+ * - Edit existing clothing into authentic Bengali Durga Puja Ashtami attire
+ * - Adapt Durga Puja pandal environment with soft Goddess Durga idol bokeh around the subject
+ * - Professional DSLR photography optics (natural skin texture, visible pores, physically plausible lighting)
+ * - Absolute elimination of cartoon, anime, CGI, 3D render, beauty filters, or generic AI faces
  */
 export function buildMasterOpenAIPrompt(options: {
   gender: string;
@@ -132,65 +134,66 @@ export function buildMasterOpenAIPrompt(options: {
 
   if (isCouple) {
     subjectIdentityInstruction =
-      'Preserve the exact identity and recognizable appearance of both individuals in the input photograph. ' +
-      'Preserve facial structure, facial proportions, eyes, nose, lips, jawlines, hairstyles, facial hair, glasses, ' +
-      'natural skin tones, approximate ages, body proportions, natural facial asymmetry, and relative position.';
+      'CRITICAL IDENTITY AND POSE PRESERVATION: The persons in this image are immutable. Do not redraw, reinterpret, beautify, replace, or regenerate the people. ' +
+      'Preserve the exact facial identities, facial geometry, facial proportions, eyes, eyebrows, noses, lips, jawlines, ears, hair, hairline, facial hair, skin tone, visible pores, and approximate ages of both individuals from the source image. ' +
+      'Preserve their exact poses, arm positions, hand placements, body orientations, heights, shoulder widths, and overall composition.';
     attireInstruction =
-      'For the couple, dress both subjects in coordinated authentic traditional Bengali Durga Puja festive clothing. ' +
-      'The male subject wears an elegant ivory/off-white Bengali panjabi kurta with subtle maroon/red embroidery, ' +
-      'traditional pleated Bengali dhoti, and a red-and-gold bordered silk uttoriyo stole. ' +
-      'The female subject wears a traditional Bengali white/off-white Garad silk saree with a rich red Bengali border ' +
-      'and gold zari, an elegant red blouse, authentic heirloom Bengali gold jewelry, jhumka earrings, bangles, and a subtle red bindi.';
+      'Edit only the clothing and festive attire on their bodies: ' +
+      'Transform the male subject clothing into an authentic ivory/off-white handloom silk Bengali Panjabi kurta with subtle maroon embroidery along collar and placket, traditional dhoti, and red-gold bordered uttoriyo stole draped over shoulder following his exact posture and body lines. ' +
+      'Transform the female subject clothing into an authentic white/off-white Garad silk saree with rich red border and gold zari, red blouse, and traditional Bengali gold jewelry.';
   } else if (isMale) {
     subjectIdentityInstruction =
-      'Preserve the exact identity and recognizable appearance of the male person in the input photograph. ' +
-      'Preserve facial structure, facial proportions, eyes, eyebrows, nose, lips, jawline, hairstyle, beard, moustache, ' +
-      'glasses, natural skin tone, approximate age, body proportions, natural facial asymmetry, and recognizable characteristics.';
+      'CRITICAL IDENTITY AND POSE PRESERVATION: The person in this photograph is the absolute visual truth. Do not create a new person and do not create a generic model. ' +
+      'The person face is an immutable part of the source photograph. Do not redraw, regenerate, reinterpret, beautify, replace, or substantially modify the face. ' +
+      'Keep the exact same face identity, facial structure, face shape, eyes, eyebrows, nose, lips, jawline, ears, hairstyle, hairline, beard/moustache, natural skin tone with visible pores, and approximate age. ' +
+      'Keep the exact same body shape, shoulder width, height proportions, camera angle, head angle, body orientation, pose, hand position, and relative position in frame. ' +
+      'Do NOT move his arms. Do NOT move his hands. Do NOT change his head position. Do NOT change his body orientation. Do NOT make him stand in a different pose. Do NOT create a centered studio portrait.';
     attireInstruction =
-      'Dress the male subject in authentic Bengali Durga Puja traditional clothing: an elegant ivory/off-white Bengali panjabi ' +
-      'kurta with subtle maroon/red embroidery along collar and placket, traditional pleated Bengali dhoti, and a rich red-and-gold bordered silk uttoriyo stole draped over shoulder.';
+      'Transform the clothing directly on the person existing body and pose: ' +
+      'Transform the current dark blue outfit (or whatever outfit the person is wearing) into an authentic traditional Bengali Durga Puja Ashtami ensemble: ' +
+      'an elegant ivory/off-white handloom silk Bengali Panjabi kurta with subtle maroon/red embroidery along collar and placket, traditional pleated Bengali dhoti, and a rich red-and-gold bordered silk uttoriyo stole draped gracefully over his shoulder. ' +
+      'The clothing must follow the person existing body silhouette, posture, and arm positions precisely.';
   } else if (isFemale) {
     subjectIdentityInstruction =
-      'Preserve the exact identity and recognizable appearance of the female person in the input photograph. ' +
-      'Preserve facial structure, facial proportions, eyes, eyebrows, nose, lips, jawline, hairstyle, skin tone, ' +
-      'approximate age, body proportions, natural facial asymmetry, and recognizable characteristics.';
+      'CRITICAL IDENTITY AND POSE PRESERVATION: The person in this photograph is the absolute visual truth. Do not create a new person and do not create a generic model. ' +
+      'The person face is an immutable part of the source photograph. Do not redraw, regenerate, reinterpret, beautify, replace, or substantially modify the face. ' +
+      'Keep the exact same face identity, facial structure, face shape, eyes, eyebrows, nose, lips, jawline, ears, hairstyle, hairline, natural skin tone with visible pores, and approximate age. ' +
+      'Keep the exact same body shape, shoulder width, height proportions, camera angle, head angle, body orientation, pose, hand position, and relative position in frame.';
     attireInstruction =
-      'Dress the female subject in authentic Bengali Durga Puja traditional clothing: a traditional Bengali white/off-white Garad silk saree ' +
-      'with a rich crimson red Bengali border and gold zari, tailored red blouse, heirloom Bengali gold jewelry, jhumka earrings, ' +
-      'shankha-pola and gold bangles, and a subtle festive red bindi on forehead.';
+      'Transform the clothing directly on the person existing body and pose: ' +
+      'Transform the current outfit into an authentic traditional Bengali Durga Puja Ashtami ensemble: ' +
+      'a traditional Bengali white/off-white Garad silk saree with a rich crimson red border and gold zari accents, tailored red blouse, heirloom Bengali gold jewelry, and a subtle festive red bindi.';
   } else {
     subjectIdentityInstruction =
-      'Preserve the exact identity and recognizable appearance of the person or people in the input photograph. ' +
-      'Preserve facial structure, facial proportions, eyes, nose, lips, jawline, hairstyle, skin tone, and approximate age.';
+      'The person face and body are immutable parts of the source photograph. Preserve the exact face identity, facial structure, eyes, nose, mouth, jawline, hairstyle, skin tone, body shape, pose, and framing.';
     attireInstruction =
-      'Dress the subject in authentic Bengali Durga Puja festive handloom silk attire with rich gold and crimson accents.';
+      'Transform the current clothing into authentic Bengali Durga Puja festive handloom silk attire with rich gold and crimson accents, perfectly fitted to the existing body posture.';
   }
 
-  const customNotes = options.userPrompt ? ` Specific styling preferences: ${options.userPrompt}.` : '';
+  const customNotes = options.userPrompt ? ` Additional styling preference: ${options.userPrompt}.` : '';
 
-  return `Transform the provided real photograph into an authentic, highly photorealistic Bengali Durga Puja ${pujaDay} portrait photograph.
+  return `This is a REAL PHOTOGRAPH EDITING AND TRANSFORMATION task.
 
-This is a REAL PHOTOGRAPH TRANSFORMATION task.
+TASK: "Change the clothes and festive environment of this photograph around the existing person."
+DO NOT generate a new person. DO NOT create a generic Bengali male model. The exact person shown in the source image must remain recognizable.
 
 ${subjectIdentityInstruction}
-The person must remain clearly recognizable as the same person from the source photograph.
-Do not replace the person's face and do not create a different person.
-Transform primarily the clothing, background, lighting and festive environment.
 
+CLOTHING TRANSFORMATION:
 ${attireInstruction}${customNotes}
 
-Place the subjects inside a beautiful realistic Bengali Durga Puja pandal during ${pujaDay}.
-Include a beautifully decorated Goddess Durga idol naturally positioned in the background, traditional Bengali pandal decorations, marigold flowers, red and cream fabric, brass lamps, diyas and warm golden festive lighting.
-Keep the human subject as the primary focus. The Goddess Durga idol must remain naturally in the soft background with realistic depth of field and bokeh; do not let the background overpower the subject.
+BACKGROUND & FESTIVE ENVIRONMENT TRANSFORMATION:
+Transform the surrounding environment into an authentic Bengali Durga Puja ${pujaDay} celebration.
+Place the subject naturally in a Durga Puja pandal setting:
+Include a beautifully decorated Goddess Durga idol naturally positioned in the background with soft depth of field and realistic bokeh, warm golden festive lighting, brass diyas, marigold flower garlands, and traditional red and cream fabric decorations.
+The background must adapt around the original person silhouette without changing the subject framing, camera angle, or perspective.
 
-Make the final result look exactly like a professional real-world photograph captured by a professional DSLR or mirrorless camera (35mm / 85mm portrait lens) at a Bengali Durga Puja celebration.
-Use natural human skin texture, realistic visible pores, natural hair strands, realistic eyes, realistic fabric texture, physically plausible lighting, natural shadows, realistic highlights, realistic depth of field, realistic lens rendering and subtle professional color grading.
-The subject and environment must have consistent lighting and must appear naturally photographed together.
-The final image must be photographic, natural, elegant and culturally authentic.
+AESTHETICS & OPTICS:
+The final image must look like the original photograph was actually taken in real life at a Durga Puja celebration with a professional camera (DSLR portrait lens, 85mm f/1.8).
+Use natural human skin texture, visible natural skin pores, natural hair strands, natural fabric drape, physically plausible festive lighting, natural shadows, and realistic highlights.
 
-Absolutely avoid anime, manga, cartoon, illustration, digital painting, oil painting, watercolor, comic-book styling, CGI, 3D rendering, fantasy art, plastic skin, porcelain skin, doll-like faces, artificial eyes, excessive beauty filters, excessive HDR, oversaturation, unrealistic lighting, face replacement, celebrity resemblance or generic AI faces.
-Do not alter the person's identity. Do not generate a new person. Do not distort the face, hands, fingers, eyes, jewelry or clothing.
-The final image should look like an authentic professional Bengali Durga Puja photograph taken in real life.`;
+ABSOLUTE NEGATIVES:
+Zero anime, zero cartoon, zero illustration, zero digital painting, zero CGI, zero 3D render, zero plastic or doll skin, zero AI beauty filters, zero face replacement, zero pose changes, zero generic AI faces. Preserve the authentic identity of the original person.`;
 }
 
 /**
@@ -271,53 +274,72 @@ export async function transformWithOpenAI(
       baseURL: rawBaseUrl,
     });
 
+    const imageBuffer = fs.readFileSync(sourceImagePath);
+    const ext = path.extname(sourceImagePath).toLowerCase();
+    const mimeType = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
+
+    const imageFile = await toFile(imageBuffer, path.basename(sourceImagePath), {
+      type: mimeType,
+    });
+
     console.log(`[OpenAI Primary] Transforming uploaded photograph with model: ${modelName}...`);
+    console.log(`[OpenAI Primary] Attached file: ${imageFile.name} (${imageBuffer.length} bytes, MIME: ${mimeType})`);
+    console.log(`[OpenAI Primary] Configuration: input_fidelity=high, quality=high, size=auto`);
 
-    const imageFile = await toFile(
-      fs.readFileSync(sourceImagePath),
-      path.basename(sourceImagePath),
-      { type: 'image/jpeg' }
-    );
-
-    const response = await client.images.edit({
+    const response = await (client.images as any).edit({
       image: imageFile,
       prompt: promptText,
       model: modelName,
+      input_fidelity: 'high',
+      quality: 'high',
+      output_format: 'png',
+      size: 'auto',
       n: 1,
-      size: '1024x1024',
     });
 
     const item = response.data?.[0];
-    let imageBuffer: Buffer | null = null;
+    let resultBuffer: Buffer | null = null;
 
     if (item?.b64_json) {
-      imageBuffer = Buffer.from(item.b64_json, 'base64');
+      resultBuffer = Buffer.from(item.b64_json, 'base64');
+      console.log(`[OpenAI Primary] Received base64 image data (${resultBuffer.length} bytes)`);
     } else if (item?.url) {
-      console.log('[OpenAI Primary] Downloading generated realistic image from OpenAI URL...');
+      console.log(`[OpenAI Primary] Downloading generated realistic image from OpenAI URL: ${item.url.substring(0, 40)}...`);
       const imgRes = await fetch(item.url);
       if (imgRes.ok) {
-        imageBuffer = Buffer.from(await imgRes.arrayBuffer());
+        resultBuffer = Buffer.from(await imgRes.arrayBuffer());
       }
     }
 
-    if (imageBuffer && imageBuffer.length > 5000) {
+    if (resultBuffer && resultBuffer.length > 5000) {
       const targetDir = path.resolve(config.UPLOAD_DIR);
       if (!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir, { recursive: true });
       }
-      const filename = `agomoni-openai-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+      const filename = `agomoni-openai-${Date.now()}-${Math.floor(Math.random() * 10000)}.png`;
       const savePath = path.resolve(targetDir, filename);
-      fs.writeFileSync(savePath, imageBuffer);
-      console.log(`[OpenAI Primary] Successfully saved authentic realistic photograph: ${savePath} (${imageBuffer.length} bytes)`);
+      fs.writeFileSync(savePath, resultBuffer);
+      console.log(`[OpenAI Primary] Successfully saved authentic realistic photograph: ${savePath} (${resultBuffer.length} bytes)`);
       return `/uploads/${filename}`;
     }
 
     console.warn('[OpenAI Primary] OpenAI response did not contain valid image data.');
   } catch (err: any) {
-    // Log safe diagnostic information without exposing API keys or tokens
-    console.warn(
-      `[OpenAI Primary] Transformation failed: status=${err?.status}, code=${err?.code || err?.type || 'unknown'}`
+    const status = err?.status || err?.statusCode;
+    const code = err?.code || err?.type || err?.error?.code || 'unknown';
+    const message = err?.message || err?.error?.message || String(err);
+    console.error(
+      `[OpenAI Primary ERROR] OpenAI image edit API call failed!\n` +
+      `  Status: ${status}\n` +
+      `  Code: ${code}\n` +
+      `  Message: ${message}`
     );
+    if (code === 'credit_balance_exhausted' || status === 429) {
+      console.error(
+        `[OpenAI Primary ERROR] Your OpenAI account has 0 credits remaining (HTTP 429: credit_balance_exhausted).\n` +
+        `  Please add billing credits at https://platform.openai.com/settings/organization/billing to enable OpenAI image transformations.`
+      );
+    }
   }
 
   return null;
@@ -415,13 +437,12 @@ export async function executeFallbackPhotorealisticStyling(
   const swapped = await executeLocalNeuralFaceSwap(sourceLocalPath, templatePath, stylistLocalPath);
 
   if (swapped && fs.existsSync(stylistLocalPath)) {
-    console.log('[Fallback Stylist] Photorealistic fallback completed successfully:', stylistLocalPath);
+    console.log('[Fallback Stylist] Photorealistic fallback completed successfully with transferred face:', stylistLocalPath);
     return `/uploads/${stylistFilename}`;
   }
 
-  // If face transfer is unavailable, copy the authentic high-resolution template
-  fs.copyFileSync(templatePath, stylistLocalPath);
-  return `/uploads/${stylistFilename}`;
+  console.warn('[Fallback Stylist] Neural face transfer was unavailable. Refusing to copy template as it would replace identity.');
+  return null;
 }
 
 /**
@@ -448,6 +469,7 @@ export class OpenAIFirstOutfitProvider implements IAIProvider {
     const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
 
     let resultImageUrl: string | null = null;
+    let openAiSucceeded = false;
 
     // 2. OpenAI Image Model — PRIMARY GENERATOR
     if (sourceLocalPath && fs.existsSync(sourceLocalPath)) {
@@ -456,7 +478,8 @@ export class OpenAIFirstOutfitProvider implements IAIProvider {
 
       if (openAiImage) {
         console.log('[Agomoni AI] OpenAI successfully generated realistic transformed photograph!');
-        // 3. Optional secondary enhancement (if configured)
+        openAiSucceeded = true;
+        // 3. Optional secondary enhancement (temporarily disabled for pure OpenAI testing)
         resultImageUrl = await enhanceWithSecondaryModel(openAiImage, input);
       } else {
         console.warn('[Agomoni AI] OpenAI generation did not produce an image. Triggering configured fallback...');
@@ -469,16 +492,12 @@ export class OpenAIFirstOutfitProvider implements IAIProvider {
       resultImageUrl = await executeFallbackPhotorealisticStyling(sourceLocalPath, input);
     }
 
-    // 5. If everything failed, provide safe authentic festive photo
+    // 5. If everything failed, do NOT return a photo of a stranger
     if (!resultImageUrl) {
-      const isCouple = input.gender === 'COUPLE';
-      const isMale = input.gender === 'MALE';
-      const defaultPath = isCouple
-        ? '/outfits/couple-traditional.jpg'
-        : isMale
-        ? '/outfits/male-traditional.jpg'
-        : '/outfits/female-traditional.jpg';
-      resultImageUrl = defaultPath;
+      console.error('[Agomoni AI] Transformation failed: OpenAI did not generate an image and fallback identity transfer was unavailable.');
+      throw new Error(
+        'Image transformation could not be completed by OpenAI. If using OpenAI as primary generator, please ensure your OpenAI account has available credits.'
+      );
     }
 
     // 6. Cultural styling descriptions and tips
