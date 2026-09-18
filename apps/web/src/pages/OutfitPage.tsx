@@ -16,6 +16,7 @@ export const OutfitPage: React.FC = () => {
   const [pujaDay, setPujaDay] = useState('Ashtami');
   const [inputImageUrl, setInputImageUrl] = useState('');
   const [aiMode, setAiMode] = useState<'auto' | 'vton' | 'photomaker' | 'instantid' | 'faceswap'>('auto');
+  const [generationMode, setGenerationMode] = useState<'LOCAL_FREE' | 'OPENAI_HD'>('LOCAL_FREE');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -49,7 +50,38 @@ export const OutfitPage: React.FC = () => {
     return apiUrl(url);
   };
 
-  const generationSteps = [
+  const localGenerationSteps = [
+    {
+      icon: '🪔',
+      titleBn: 'মুখাবয়ব ও শারীরিক বৈশিষ্ট্য বিশ্লেষণ হচ্ছে...',
+      titleEn: 'Analyzing face landmarks & subject identity...',
+      subBn: 'লোকাল ফেস ম্যাপিং ও স্কিন টোন বিশ্লেষণ',
+      subEn: 'Facial keypoint geometry & skin tone analyzed',
+    },
+    {
+      icon: '🏛️',
+      titleBn: 'বাঙালি দুর্গাপূজা ফটো টেমপ্লেট নির্বাচন...',
+      titleEn: 'Selecting authentic Bengali Puja photo template...',
+      subBn: 'আসল অষ্টমীর আলোকসজ্জা, প্রতিমা ও ঐতিহ্যবাহী পোশাক',
+      subEn: 'Authentic Ashtami festive lighting & traditional attire',
+    },
+    {
+      icon: '✨',
+      titleBn: 'লোকাল নিউরাল ফেস ট্রান্সফার ও লাইটিং ম্যাচিং...',
+      titleEn: 'Local Neural Face Preservation & Lighting...',
+      subBn: 'প্রাকৃতিক ত্বকের রং ও আলোর নিখুঁত সমন্বয় (₹0 Cost)',
+      subEn: 'Natural skin tone & exposure matching (Zero API Cost)',
+    },
+    {
+      icon: '📸',
+      titleBn: 'ফেদারড ব্লেন্ডিং ও ফোটোরিয়ালিস্টিক ফিনিশিং...',
+      titleEn: 'Feathered boundary blending & realistic finishing...',
+      subBn: 'প্রাকৃতিক স্কিন টেক্সচার ও স্বাভাবিক রূপ',
+      subEn: 'Natural skin texture & photographic realism',
+    },
+  ];
+
+  const openAiGenerationSteps = [
     {
       icon: '🪔',
       titleBn: 'মুখাবয়ব ও শারীরিক বৈশিষ্ট্য বিশ্লেষণ হচ্ছে...',
@@ -79,6 +111,8 @@ export const OutfitPage: React.FC = () => {
       subEn: 'Natural skin pores, realistic hair & depth of field',
     },
   ];
+
+  const generationSteps = generationMode === 'LOCAL_FREE' ? localGenerationSteps : openAiGenerationSteps;
 
   useEffect(() => {
     let timer: any;
@@ -218,7 +252,7 @@ export const OutfitPage: React.FC = () => {
     try {
       const sourceImage = previewUrl || inputImageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
 
-      // Request generation from API
+      // Request generation from API (Free Local or OpenAI HD)
       const res = await apiFetch('/api/v1/outfit/generate', {
         method: 'POST',
         headers: {
@@ -231,6 +265,7 @@ export const OutfitPage: React.FC = () => {
           style,
           pujaDay,
           aiMode,
+          generationMode,
         }),
       });
 
@@ -242,10 +277,10 @@ export const OutfitPage: React.FC = () => {
         setGenerationsLeft(data.generationsLeft);
         fetchHistory();
       } else {
-        alert(data.message || 'Generation error');
+        alert(data.message || (lang === 'bn' ? 'ছবিটি রূপান্তর করা যায়নি। অনুগ্রহ করে অন্য একটি স্পষ্ট ছবি আপলোড করুন।' : 'Unable to transform this photo. Please try another clear photograph.'));
       }
-    } catch (err) {
-      alert('AI Generation failed');
+    } catch (err: any) {
+      alert(err?.message || (lang === 'bn' ? 'ছবিটি রূপান্তর করা যায়নি। অনুগ্রহ করে অন্য একটি স্পষ্ট ছবি আপলোড করুন।' : 'Unable to transform this photo. Please try another clear photograph.'));
     } finally {
       setIsGenerating(false);
     }
@@ -369,76 +404,79 @@ export const OutfitPage: React.FC = () => {
               </select>
             </div>
 
-            {/* AI Engine Selector (IDM-VTON / PhotoMaker / InstantID / FaceRestore) */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-cream-300 font-medium flex items-center gap-1.5">
+            {/* Provider Generation Mode Selector: Free Local (Default) vs OpenAI HD (Premium) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-cream-300 font-medium flex items-center gap-1.5 text-xs">
                   <Sparkles size={13} className="text-gold-400" />
-                  <span>AI Engine / এআই মডেল</span>
+                  <span>{lang === 'bn' ? 'রূপান্তর মোড (Generation Mode)' : 'Generation Pipeline'}</span>
                 </label>
-                <span className="text-[10px] text-emerald-400 font-medium bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  100% Free
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                  generationMode === 'LOCAL_FREE'
+                    ? 'text-emerald-300 bg-emerald-950/60 border-emerald-500/40'
+                    : 'text-purple-300 bg-purple-950/60 border-purple-500/40'
+                }`}>
+                  {generationMode === 'LOCAL_FREE' ? '₹0 API Cost (Default)' : 'Optional Premium'}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {/* Free Local Mode */}
                 <button
                   type="button"
-                  onClick={() => setAiMode('auto')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
-                    aiMode === 'auto'
-                      ? 'bg-gold-500/20 border-gold-400 text-gold-300 font-semibold shadow-sm'
+                  onClick={() => setGenerationMode('LOCAL_FREE')}
+                  className={`p-3 rounded-2xl border text-left transition-all relative ${
+                    generationMode === 'LOCAL_FREE'
+                      ? 'bg-gold-500/15 border-gold-400 text-gold-200 shadow-md ring-1 ring-gold-400/40'
                       : 'bg-night-850 border-gold-500/20 text-cream-300 hover:border-gold-500/40'
                   }`}
                 >
-                  <div className="font-semibold text-cream-100 flex items-center gap-1">
-                    <span>✨ Auto (Best Result)</span>
+                  <div className="flex items-center justify-between font-bold text-cream-100 mb-1">
+                    <span className="flex items-center gap-1">
+                      <span>⚡</span>
+                      <span>Free Local</span>
+                    </span>
+                    <span className="text-[9px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30 font-mono">
+                      DEFAULT
+                    </span>
                   </div>
-                  <div className="text-[10px] text-cream-400 mt-0.5">স্বয়ংক্রিয় সেরা রেজাল্ট</div>
+                  <p className="text-[11px] text-gold-300/90 font-medium">
+                    Runs locally — no API credits required
+                  </p>
+                  <p className="text-[10px] text-cream-400 mt-1 leading-snug">
+                    {lang === 'bn'
+                      ? 'খাঁটি পুজো ফটো টেমপ্লেট + লোকাল ফেস সোয়াপ'
+                      : 'Authentic Bengali photo template + local face preserve'}
+                  </p>
                 </button>
 
+                {/* OpenAI HD Mode */}
                 <button
                   type="button"
-                  onClick={() => setAiMode('vton')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
-                    aiMode === 'vton'
-                      ? 'bg-gold-500/20 border-gold-400 text-gold-300 font-semibold shadow-sm'
+                  onClick={() => setGenerationMode('OPENAI_HD')}
+                  className={`p-3 rounded-2xl border text-left transition-all relative ${
+                    generationMode === 'OPENAI_HD'
+                      ? 'bg-purple-950/30 border-purple-400 text-purple-200 shadow-md ring-1 ring-purple-400/40'
                       : 'bg-night-850 border-gold-500/20 text-cream-300 hover:border-gold-500/40'
                   }`}
                 >
-                  <div className="font-semibold text-cream-100 flex items-center gap-1">
-                    <span>👗 IDM-VTON</span>
+                  <div className="flex items-center justify-between font-bold text-cream-100 mb-1">
+                    <span className="flex items-center gap-1">
+                      <span>👑</span>
+                      <span>OpenAI HD</span>
+                    </span>
+                    <span className="text-[9px] bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30 font-mono">
+                      PREMIUM
+                    </span>
                   </div>
-                  <div className="text-[10px] text-cream-400 mt-0.5">ভার্চুয়াল পোশাক ট্রাই-অন</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAiMode('photomaker')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
-                    aiMode === 'photomaker'
-                      ? 'bg-gold-500/20 border-gold-400 text-gold-300 font-semibold shadow-sm'
-                      : 'bg-night-850 border-gold-500/20 text-cream-300 hover:border-gold-500/40'
-                  }`}
-                >
-                  <div className="font-semibold text-cream-100 flex items-center gap-1">
-                    <span>📸 PhotoMaker</span>
-                  </div>
-                  <div className="text-[10px] text-cream-400 mt-0.5">প্যান্ডেল উৎসব ফটোশুট</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setAiMode('faceswap')}
-                  className={`p-2 rounded-xl border text-left transition-all ${
-                    aiMode === 'faceswap'
-                      ? 'bg-gold-500/20 border-gold-400 text-gold-300 font-semibold shadow-sm'
-                      : 'bg-night-850 border-gold-500/20 text-cream-300 hover:border-gold-500/40'
-                  }`}
-                >
-                  <div className="font-semibold text-cream-100 flex items-center gap-1">
-                    <span>👑 Royal Studio</span>
-                  </div>
-                  <div className="text-[10px] text-cream-400 mt-0.5">রাজকীয় পুজো পোর্ট্রেট</div>
+                  <p className="text-[11px] text-purple-300/90 font-medium">
+                    Uses OpenAI image generation credits
+                  </p>
+                  <p className="text-[10px] text-cream-400 mt-1 leading-snug">
+                    {lang === 'bn'
+                      ? 'OpenAI ইমেজ এডিটিং মডেল'
+                      : 'Direct OpenAI neural image edit'}
+                  </p>
                 </button>
               </div>
             </div>
@@ -590,13 +628,9 @@ export const OutfitPage: React.FC = () => {
                   </span>
                 </div>
                 <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-300 font-semibold animate-pulse">
-                  {aiMode === 'vton'
-                    ? 'IDM-VTON Try-On'
-                    : aiMode === 'photomaker'
-                    ? 'PhotoMaker Photoshoot'
-                    : aiMode === 'faceswap'
-                    ? 'Royal Studio Swap'
-                    : 'Multi-Model AI Active'}
+                  {generationMode === 'LOCAL_FREE'
+                    ? '⚡ Free Local Pipeline (₹0 Cost)'
+                    : '👑 OpenAI HD Pipeline'}
                 </span>
               </div>
 
@@ -701,7 +735,7 @@ export const OutfitPage: React.FC = () => {
                     <span>{lang === 'bn' ? 'মুখাবয়ব সংরক্ষিত' : 'Face Preserved'}</span>
                   </span>
                   <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 font-semibold">
-                    AI Generated
+                    {result.details?.mode || 'Festive Transformation'}
                   </span>
                 </div>
               </div>

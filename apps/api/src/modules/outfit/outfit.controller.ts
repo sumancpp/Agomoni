@@ -22,6 +22,7 @@ const generateSchema = z.object({
   pujaDay: z.enum(['Shashti', 'Saptami', 'Ashtami', 'Nabami', 'Dashami']),
   prompt: z.string().max(500).optional(),
   aiMode: z.enum(['auto', 'vton', 'photomaker', 'instantid', 'faceswap']).optional(),
+  generationMode: z.enum(['LOCAL_FREE', 'OPENAI_HD']).default('LOCAL_FREE').optional(),
 });
 
 // Helper: Check free generation limits server-side
@@ -88,8 +89,9 @@ router.post('/generate', authenticate, async (req: AuthenticatedRequest, res: Re
     */
     const generationsLeft = 9999;
 
-    // Generate outfit using selected AI provider (Qwen or fallback)
-    const aiProvider = getAIProvider();
+    // Generate outfit using selected AI provider: Free Local (Default, ₹0 Cost) or OpenAI HD (Premium)
+    const generationMode = data.generationMode || 'LOCAL_FREE';
+    const aiProvider = getAIProvider(generationMode);
     const result = await aiProvider.generateOutfit({
       userId,
       inputImageUrl: data.inputImageUrl,
@@ -98,6 +100,7 @@ router.post('/generate', authenticate, async (req: AuthenticatedRequest, res: Re
       pujaDay: data.pujaDay,
       prompt: data.prompt,
       aiMode: data.aiMode,
+      generationMode,
     });
 
     // Save record to DB

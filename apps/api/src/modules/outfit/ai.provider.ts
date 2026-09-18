@@ -20,6 +20,7 @@ export interface OutfitGenerationInput {
   pujaDay: string;
   prompt?: string;
   aiMode?: 'auto' | 'vton' | 'photomaker' | 'instantid' | 'faceswap';
+  generationMode?: 'LOCAL_FREE' | 'OPENAI_HD';
 }
 
 export interface OutfitGenerationResult {
@@ -28,6 +29,8 @@ export interface OutfitGenerationResult {
   styleDescriptionEnglish: string;
   colorPalette: string[];
   stylingTips: string[];
+  provider?: string;
+  mode?: string;
 }
 
 export interface IAIProvider {
@@ -458,110 +461,201 @@ export async function executeFallbackPhotorealisticStyling(
  * - OpenAI succeeds -> return OpenAI image (optionally enhanced)
  * - OpenAI fails -> use configured photorealistic fallback model
  */
-export class OpenAIFirstOutfitProvider implements IAIProvider {
-  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
-    console.log(`\n========================================`);
-    console.log(`[Agomoni AI] Outfit generation requested for user: ${input.userId}`);
-    console.log(`[Agomoni AI] Gender: ${input.gender}, Day: ${input.pujaDay}, Style: ${input.style}`);
-    console.log(`========================================\n`);
+export function getStylingInfo(gender: string, pujaDay: string = 'Ashtami') {
+  const isCouple = gender === 'COUPLE';
+  const isMale = gender === 'MALE';
 
-    // 1. Resolve source image to disk
-    const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
-
-    let resultImageUrl: string | null = null;
-    let openAiSucceeded = false;
-
-    // 2. OpenAI Image Model — PRIMARY GENERATOR
-    if (sourceLocalPath && fs.existsSync(sourceLocalPath)) {
-      console.log('[Agomoni AI] STEP 1: Attempting OpenAI Image Model as PRIMARY GENERATOR...');
-      const openAiImage = await transformWithOpenAI(sourceLocalPath, input);
-
-      if (openAiImage) {
-        console.log('[Agomoni AI] OpenAI successfully generated realistic transformed photograph!');
-        openAiSucceeded = true;
-        // 3. Optional secondary enhancement (temporarily disabled for pure OpenAI testing)
-        resultImageUrl = await enhanceWithSecondaryModel(openAiImage, input);
-      } else {
-        console.warn('[Agomoni AI] OpenAI generation did not produce an image. Triggering configured fallback...');
-      }
-    }
-
-    // 4. Configured Fallback (only if OpenAI generation fails)
-    if (!resultImageUrl && sourceLocalPath && fs.existsSync(sourceLocalPath)) {
-      console.log('[Agomoni AI] STEP 2: Running configured photorealistic fallback model...');
-      resultImageUrl = await executeFallbackPhotorealisticStyling(sourceLocalPath, input);
-    }
-
-    // 5. If everything failed, do NOT return a photo of a stranger
-    if (!resultImageUrl) {
-      console.error('[Agomoni AI] Transformation failed: OpenAI did not generate an image and fallback identity transfer was unavailable.');
-      throw new Error(
-        'Image transformation could not be completed by OpenAI. If using OpenAI as primary generator, please ensure your OpenAI account has available credits.'
-      );
-    }
-
-    // 6. Cultural styling descriptions and tips
-    const isCouple = input.gender === 'COUPLE';
-    const isMale = input.gender === 'MALE';
-
-    let styleDescriptionBengali = '';
-    let styleDescriptionEnglish = '';
-    let colorPalette: string[] = [];
-    let stylingTips: string[] = [];
-
-    if (isCouple) {
-      styleDescriptionBengali =
-        'অষ্টমীর পুজো মণ্ডপে ঐতিহ্যবাহী যুগল সাজ—তসর সিল্কের সুবিন্যস্ত পাঞ্জাবি, ধুতি ও লাল-পাড় গরদ শাড়ির নিখুঁত সমন্বয়। দেবীর সান্নিধ্যে রাজকীয় উৎসবের আবহ।';
-      styleDescriptionEnglish =
-        'A harmonious traditional Bengali couple ensemble for Ashtami: handloom tussar silk Panjabi with pleated dhoti paired with an authentic white and crimson Garad silk saree.';
-      colorPalette = ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Garad Ivory)'];
-      stylingTips = [
-        'Coordinate the red embroidery on the Panjabi with the red border of the saree.',
-        'Pair with authentic handcrafted Kolhapuri or Nagra footwear for comfort in pandals.',
+  if (isCouple) {
+    return {
+      styleDescriptionBengali:
+        `ঐতিহ্যবাহী যুগল সাজ (${pujaDay})—তসর সিল্কের সুবিন্যস্ত পাঞ্জাবি, ধুতি ও লাল-পাড় গরদ শাড়ির নিখুঁত সমন্বয়। দেবী দুর্গার সান্নিধ্যে খাঁটি বাঙালি উৎসবের আবহ।`,
+      styleDescriptionEnglish:
+        `A harmonious traditional Bengali couple ensemble for ${pujaDay}: handloom tussar silk Panjabi with pleated dhoti paired with an authentic crimson-bordered Garad silk saree.`,
+      colorPalette: ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Garad Ivory)'],
+      stylingTips: [
+        'Coordinate the crimson embroidery on the Panjabi with the red border of the saree.',
+        'Pair with authentic handcrafted Kolhapuri or Nagra footwear for pandal comfort.',
         'Subtle gold jewelry and a delicate round bindi complete the sacred festive charm.',
-      ];
-    } else if (isMale) {
-      styleDescriptionBengali =
-        'হাতে বোনা তসর সিল্কের পাঞ্জাবি, রাজকীয় মেরুন সুতোর সূক্ষ্ম কাজ, ঐতিহ্যবাহী কুঁচি দেওয়া ধুতি আর উত্তরীয়। পুজো মণ্ডপে খাঁটি বাঙালি উৎসবের আভিজাত্য।';
-      styleDescriptionEnglish =
-        'Handcrafted Tussar Silk Panjabi with subtle crimson embroidery, traditional pleated dhoti, and red-gold bordered uttoriyo stole.';
-      colorPalette = ['#6B1D2F (Heritage Maroon)', '#D4AF37 (Royal Gold)', '#FFF8DC (Cornsilk Ivory)'];
-      stylingTips = [
+      ],
+    };
+  } else if (isMale) {
+    return {
+      styleDescriptionBengali:
+        `হাতে বোনা তসর সিল্কের পাঞ্জাবি (${pujaDay}), রাজকীয় মেরুন সুতোর সূক্ষ্ম কাজ, ঐতিহ্যবাহী কুঁচি দেওয়া ধুতি আর উত্তরীয়। পুজো মণ্ডপে খাঁটি বাঙালি উৎসবের আভিজাত্য।`,
+      styleDescriptionEnglish:
+        `Handcrafted Tussar Silk Panjabi (${pujaDay}) with subtle crimson embroidery, traditional pleated dhoti, and red-gold bordered uttoriyo stole.`,
+      colorPalette: ['#6B1D2F (Heritage Maroon)', '#D4AF37 (Royal Gold)', '#FFF8DC (Cornsilk Ivory)'],
+      stylingTips: [
         'Drape the uttoriyo stole neatly over the left shoulder for an aristocratic festive look.',
         'Classic pleated dhoti with contrasting border for authentic Ashtami styling.',
         'Handmade leather mojaris or Kolhapuris for effortless pandal hopping.',
-      ];
-    } else {
-      styleDescriptionBengali =
-        'ঐতিহ্যবাহী লাল-পাড় গরদ শাড়ি, খাঁটি সোনার সাবেকি গহনা, হাতে শাঁখা-পলা আর উজ্জ্বল লাল টিপ। অষ্টমীর অঞ্জলির জন্য পরম শ্রদ্ধার সাজ।';
-      styleDescriptionEnglish =
-        'Traditional Bengali Lal-Paar Garad Silk Saree with rich gold zari border, heirloom gold jewelry, shankha-pola, and red bindi.';
-      colorPalette = ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Kash Cream)'];
-      stylingTips = [
-        'Complete the festive look with traditional shankha-pola and heirloom gold jhumkas.',
-        'Apply a touch of sandalwood paste (chondon) along eyebrows for Ashtami morning.',
-        'Pair with an embroidered velvet potli bag for puja essentials.',
-      ];
-    }
-
+      ],
+    };
+  } else {
     return {
-      resultImageUrl,
-      styleDescriptionBengali,
-      styleDescriptionEnglish,
-      colorPalette,
-      stylingTips,
+      styleDescriptionBengali:
+        `ঐতিহ্যবাহী লাল-পাড় গরদ শাড়ি (${pujaDay}), খাঁটি সোনার সাবেকি গহনা, হাতে শাঁখা-পলা আর উজ্জ্বল লাল টিপ। অষ্টমীর অঞ্জলির জন্য পরম শ্রদ্ধার সাজ।`,
+      styleDescriptionEnglish:
+        `Traditional Bengali Lal-Paar Garad Silk Saree (${pujaDay}) with rich gold zari border, heirloom gold jewelry, shankha-pola, and red bindi.`,
+      colorPalette: ['#8B0000 (Sindoor Red)', '#D4AF37 (Royal Gold)', '#FDFBF7 (Kash Cream)'],
+      stylingTips: [
+        'Complete the festive look with traditional shankha-pola and heirloom gold jhumkas.',
+        'Apply a touch of sandalwood paste (chondon) along eyebrows for festive charm.',
+        'Pair with an embroidered velvet potli bag for puja essentials.',
+      ],
     };
   }
 }
 
 /**
- * Executes high-precision facial swap and CodeFormer/GFPGAN restoration onto target template
+ * DEFAULT FREE LOCAL PROVIDER (₹0 API Cost):
+ * Transposes user's facial identity onto authentic Bengali Durga Puja photographic templates
+ * using local ONNX Inswapper + LAB color/exposure matching + feathered boundary blending.
+ *
+ * Runs 100% locally with zero external API dependencies, zero credits required.
+ * NEVER returns a stranger's template if face processing fails.
+ */
+export class LocalPhotorealisticProvider implements IAIProvider {
+  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
+    console.log(`\n========================================`);
+    console.log(`[Agomoni AI] LOCAL PHOTOREALISTIC OUTFIT GENERATION (₹0 API Cost)`);
+    console.log(`[Agomoni AI] User: ${input.userId}, Subject: ${input.gender}, Day: ${input.pujaDay}, Style: ${input.style}`);
+    console.log(`========================================\n`);
+
+    const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
+    if (!sourceLocalPath || !fs.existsSync(sourceLocalPath)) {
+      const err = new Error('Unable to read uploaded photograph. Please re-upload your photo.');
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const isCouple = input.gender === 'COUPLE';
+    const isMale = input.gender === 'MALE';
+    const isModern = input.style === 'Modern' || input.style === 'Casual Puja' || input.style === 'Night Puja';
+
+    let templateRelative = '';
+    if (isCouple) {
+      templateRelative = 'uploads/outfits/couple-traditional.jpg';
+    } else if (isMale) {
+      templateRelative = isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg';
+    } else {
+      templateRelative = isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg';
+    }
+
+    const candidateTemplatePaths = [
+      path.resolve(process.cwd(), templateRelative),
+      path.resolve(process.cwd(), 'apps/api', templateRelative),
+      path.resolve(localDir, '../../..', templateRelative),
+      path.resolve(localDir, '../../../..', templateRelative),
+    ];
+
+    const templatePath = candidateTemplatePaths.find((p) => fs.existsSync(p));
+    if (!templatePath) {
+      console.error('[Local Provider ERROR] Authentic photo template not found:', templateRelative);
+      const err = new Error('Authentic festival photo template could not be loaded.');
+      (err as any).statusCode = 500;
+      throw err;
+    }
+
+    const targetDir = path.resolve(config.UPLOAD_DIR);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    const outputFilename = `agomoni-festive-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+    const outputLocalPath = path.resolve(targetDir, outputFilename);
+
+    console.log(`[Local Provider] Processing face swap with ${templatePath}...`);
+    const swapResult = await executeLocalNeuralFaceSwap(
+      sourceLocalPath,
+      templatePath,
+      outputLocalPath,
+      isCouple ? 'couple' : 'single'
+    );
+
+    if (!swapResult.success || !fs.existsSync(outputLocalPath)) {
+      const failureMsg =
+        swapResult.errorMessage ||
+        (isCouple
+          ? 'Couple transformation requires a photograph with two clearly visible faces. Please try another photo.'
+          : 'Unable to detect a clear face in this photograph. Please upload a clear photo with a visible face.');
+      console.error('[Local Provider ERROR] Face transformation aborted:', failureMsg);
+      const err = new Error(failureMsg);
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    console.log('[Local Provider SUCCESS] Transformation completed successfully:', outputLocalPath);
+    const stylingInfo = getStylingInfo(input.gender, input.pujaDay);
+
+    return {
+      resultImageUrl: `/uploads/${outputFilename}`,
+      ...stylingInfo,
+      provider: 'LOCAL_FREE',
+      mode: 'Local Photorealistic (₹0 Cost)',
+    };
+  }
+}
+
+/**
+ * OPTIONAL PREMIUM OPENAI PROVIDER:
+ * Direct image editing via OpenAI's gpt-image-2 endpoint.
+ * Requires active OpenAI API credits.
+ */
+export class OpenAIProvider implements IAIProvider {
+  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
+    console.log(`\n========================================`);
+    console.log(`[Agomoni AI] OPENAI HD OUTFIT GENERATION (Premium Mode)`);
+    console.log(`[Agomoni AI] User: ${input.userId}, Subject: ${input.gender}, Day: ${input.pujaDay}, Style: ${input.style}`);
+    console.log(`========================================\n`);
+
+    const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
+    if (!sourceLocalPath || !fs.existsSync(sourceLocalPath)) {
+      const err = new Error('Unable to read uploaded photograph. Please re-upload your photo.');
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const openAiImage = await transformWithOpenAI(sourceLocalPath, input);
+    if (!openAiImage) {
+      const err = new Error(
+        'OpenAI HD transformation failed. Please ensure your OpenAI account has available credits, or switch to the default Free Local mode.'
+      );
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const stylingInfo = getStylingInfo(input.gender, input.pujaDay);
+
+    return {
+      resultImageUrl: openAiImage,
+      ...stylingInfo,
+      provider: 'OPENAI_HD',
+      mode: 'OpenAI HD (Premium)',
+    };
+  }
+}
+
+/**
+ * Backward compatibility wrapper
+ */
+export class OpenAIFirstOutfitProvider implements IAIProvider {
+  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
+    const generationMode = input.generationMode || 'LOCAL_FREE';
+    const provider = getAIProvider(generationMode);
+    return provider.generateOutfit(input);
+  }
+}
+
+/**
+ * Executes high-precision facial swap and feathered blending using local ONNX pipeline
  */
 export async function executeLocalNeuralFaceSwap(
   sourceImagePath: string,
   targetImagePath: string,
-  outputImagePath: string
-): Promise<boolean> {
+  outputImagePath: string,
+  mode: 'single' | 'couple' = 'single'
+): Promise<{ success: boolean; errorMessage?: string }> {
   return new Promise((resolve) => {
     const candidateScriptPaths = [
       path.resolve(process.cwd(), 'apps/api/scripts/faceswap.py'),
@@ -575,33 +669,46 @@ export async function executeLocalNeuralFaceSwap(
 
     if (!scriptPath) {
       console.warn('[FaceSwap] faceswap.py not found in candidate paths:', candidateScriptPaths);
-      return resolve(false);
+      return resolve({ success: false, errorMessage: 'Local faceswap script is not configured.' });
     }
 
     if (!fs.existsSync(sourceImagePath) || !fs.existsSync(targetImagePath)) {
       console.warn('[FaceSwap] Source or target image not found:', { sourceImagePath, targetImagePath });
-      return resolve(false);
+      return resolve({ success: false, errorMessage: 'Source or target image was not found on disk.' });
     }
 
-    console.log(`[FaceSwap] Transferring facial identity using ${scriptPath}...`);
-    const py = spawn('python3', [scriptPath, sourceImagePath, targetImagePath, outputImagePath]);
+    console.log(`[FaceSwap] Transferring facial identity using ${scriptPath} (mode: ${mode})...`);
+    const py = spawn('python3', [scriptPath, sourceImagePath, targetImagePath, outputImagePath, mode]);
 
+    let stderrOutput = '';
     py.stdout.on('data', (d) => console.log(`[FaceSwap py] ${d.toString().trim()}`));
-    py.stderr.on('data', (d) => console.error(`[FaceSwap py err] ${d.toString().trim()}`));
+    py.stderr.on('data', (d) => {
+      const str = d.toString();
+      stderrOutput += str;
+      console.error(`[FaceSwap py err] ${str.trim()}`);
+    });
 
     py.on('close', (code) => {
       if (code === 0 && fs.existsSync(outputImagePath)) {
         console.log('[FaceSwap] Face swap executed successfully!');
-        resolve(true);
+        resolve({ success: true });
       } else {
         console.warn(`[FaceSwap] Process exited with code ${code}`);
-        resolve(false);
+        let friendlyErr = '';
+        if (stderrOutput.includes('Couple transformation requires at least 2')) {
+          friendlyErr = 'Couple transformation requires a photograph with two clearly visible faces. Only 1 face was detected.';
+        } else if (stderrOutput.includes('No faces detected in uploaded photo')) {
+          friendlyErr = 'No face was detected in the uploaded photograph. Please upload a clear photo with a visible face.';
+        } else if (stderrOutput.includes('Inswapper ONNX model not found')) {
+          friendlyErr = 'Local ONNX face swap model is missing on the server.';
+        }
+        resolve({ success: false, errorMessage: friendlyErr || undefined });
       }
     });
 
     py.on('error', (err) => {
       console.error('[FaceSwap] Failed to start python process', err);
-      resolve(false);
+      resolve({ success: false, errorMessage: 'Failed to start local python image processing engine.' });
     });
   });
 }
@@ -697,8 +804,12 @@ export async function generateOpenAIImage(prompt: string): Promise<string | null
 
 /**
  * Factory to pick the appropriate AI provider.
- * OpenAI is ALWAYS PRIMARY.
+ * FREE LOCAL is DEFAULT (₹0 API cost, authentic photographic template + local ONNX Inswapper).
+ * OPENAI_HD is OPTIONAL PREMIUM (requires OpenAI image editing credits).
  */
-export function getAIProvider(): IAIProvider {
-  return new OpenAIFirstOutfitProvider();
+export function getAIProvider(generationMode: 'LOCAL_FREE' | 'OPENAI_HD' = 'LOCAL_FREE'): IAIProvider {
+  if (generationMode === 'OPENAI_HD') {
+    return new OpenAIProvider();
+  }
+  return new LocalPhotorealisticProvider();
 }
