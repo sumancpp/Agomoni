@@ -206,10 +206,16 @@ export async function transformWithOpenAI(
     (config as any).GPT_IMAGE_API_KEY ||
     config.OPENAI_API_KEY ||
     process.env.GPT_IMAGE_API_KEY ||
-    process.env.OPENAI_API_KEY;
+    process.env.OPENAI_API_KEY ||
+    process.env.OPENAI_KEY ||
+    process.env.OPEN_AI_KEY ||
+    (config.AI_API_KEY?.startsWith('sk-') ? config.AI_API_KEY : undefined) ||
+    (process.env.AI_API_KEY?.startsWith('sk-') ? process.env.AI_API_KEY : undefined);
 
   if (!apiKey) {
     const candidateEnvPaths = [
+      '/etc/secrets/OPENAI_API_KEY',
+      '/etc/secrets/.env',
       path.resolve(process.cwd(), 'apps/api/.env'),
       path.resolve(process.cwd(), '.env'),
       path.resolve(localDir, '../../.env'),
@@ -220,7 +226,11 @@ export async function transformWithOpenAI(
       if (fs.existsSync(f)) {
         try {
           const text = fs.readFileSync(f, 'utf8');
-          const m = text.match(/^OPENAI_API_KEY\s*=\s*["']?([^"'\r\n]+)["']?/m);
+          if (f.endsWith('OPENAI_API_KEY')) {
+            apiKey = text.trim();
+            break;
+          }
+          const m = text.match(/^(?:OPENAI_API_KEY|GPT_IMAGE_API_KEY|OPENAI_KEY|OPEN_AI_KEY)\s*=\s*["']?([^"'\r\n]+)["']?/m);
           if (m && m[1]) {
             apiKey = m[1].trim();
             break;

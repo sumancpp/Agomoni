@@ -6,6 +6,7 @@ import { z } from 'zod';
 const localDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
 
 const candidateEnvFiles = [
+  '/etc/secrets/.env',
   path.resolve(process.cwd(), 'apps/api/.env'),
   path.resolve(process.cwd(), '.env'),
   path.resolve(localDir, '../../.env'),
@@ -19,6 +20,15 @@ for (const envFile of candidateEnvFiles) {
   }
 }
 dotenv.config();
+
+// If secret file /etc/secrets/OPENAI_API_KEY exists on Render
+if (!process.env.OPENAI_API_KEY && fs.existsSync('/etc/secrets/OPENAI_API_KEY')) {
+  try {
+    process.env.OPENAI_API_KEY = fs.readFileSync('/etc/secrets/OPENAI_API_KEY', 'utf8').trim();
+  } catch {
+    // ignore
+  }
+}
 
 const envSchema = z.object({
   PORT: z.string().default('4000').transform((val) => parseInt(val, 10)),
