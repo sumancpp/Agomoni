@@ -1,7 +1,15 @@
 import sys
 import os
 import shutil
-import numpy as np
+
+try:
+    import numpy as np
+    import cv2
+    import insightface
+    from insightface.app import FaceAnalysis
+except ModuleNotFoundError as e:
+    print(f"[FaceSwap ERROR] Missing required Python package: {e}", file=sys.stderr)
+    sys.exit(1)
 
 def refine_face_blend(target_img, swapped_img, target_face):
     """
@@ -97,8 +105,19 @@ def swap_faces(source_path: str, target_path: str, output_path: str, mode: str =
         model_path = next((p for p in candidate_model_paths if os.path.exists(p)), None)
 
         if not model_path:
-            print(f"[FaceSwap ERROR] Inswapper ONNX model not found in {candidate_model_paths}", file=sys.stderr)
-            return False
+            # Download inswapper_128.onnx from HuggingFace if not present on server
+            target_model_dir = os.path.join(os.path.dirname(__file__), '../models')
+            os.makedirs(target_model_dir, exist_ok=True)
+            dl_path = os.path.join(target_model_dir, 'inswapper_128.onnx')
+            print(f"[FaceSwap] Downloading inswapper_128.onnx to {dl_path}...")
+            try:
+                import urllib.request
+                url = "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx"
+                urllib.request.urlretrieve(url, dl_path)
+                model_path = dl_path
+            except Exception as dl_err:
+                print(f"[FaceSwap ERROR] Could not download inswapper_128.onnx: {dl_err}", file=sys.stderr)
+                return False
 
         # Prefer buffalo_l if available with w600k_r50, fallback to buffalo_sc
         model_name = 'buffalo_l' if os.path.exists(os.path.expanduser('~/.insightface/models/buffalo_l/w600k_r50.onnx')) else 'buffalo_sc'

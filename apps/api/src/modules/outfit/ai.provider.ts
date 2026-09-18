@@ -574,6 +574,28 @@ export class LocalPhotorealisticProvider implements IAIProvider {
     );
 
     if (!swapResult.success || !fs.existsSync(outputLocalPath)) {
+      // If local neural engine is initializing in this cloud container and Gemini API key is available,
+      // seamlessly auto-fallback to Gemini AI transformation so user gets their festive portrait.
+      const geminiKey = config.GEMINI_API_KEY || config.GEMINI_API_KEY_2 || process.env.GEMINI_API_KEY;
+      if (swapResult.isEnvironmentError && geminiKey) {
+        console.log('[Local Provider] Neural dependencies initializing on container. Auto-fallback to Gemini AI...');
+        try {
+          const geminiResult = await transformWithGemini(sourceLocalPath, input, geminiKey);
+          if (geminiResult) {
+            console.log('[Local Provider] Gemini auto-fallback succeeded:', geminiResult);
+            const stylingInfo = getStylingInfo(input.gender, input.pujaDay);
+            return {
+              resultImageUrl: geminiResult,
+              ...stylingInfo,
+              provider: 'GEMINI_CLOUD',
+              mode: 'Gemini Cloud Transformation (Auto Fallback)',
+            };
+          }
+        } catch (fallbackErr) {
+          console.warn('[Local Provider] Gemini auto-fallback attempt failed:', fallbackErr);
+        }
+      }
+
       const failureMsg =
         swapResult.errorMessage ||
         (isCouple
@@ -735,6 +757,39 @@ export class OpenAIFirstOutfitProvider implements IAIProvider {
 }
 
 /**
+ * Resolves the python binary that has the required neural face swap modules installed.
+ */
+export function getPythonExecutable(): string {
+  const candidates = [
+    process.env.PYTHON_BIN,
+    path.resolve(process.cwd(), 'apps/api/.venv/bin/python'),
+    path.resolve(process.cwd(), '.venv/bin/python'),
+    path.resolve(localDir, '../../.venv/bin/python'),
+    path.resolve(localDir, '../../../.venv/bin/python'),
+    path.resolve(localDir, '../../../../.venv/bin/python'),
+    '/opt/render/project/src/apps/api/.venv/bin/python',
+    'python3',
+    'python',
+  ].filter(Boolean) as string[];
+
+  for (const bin of candidates) {
+    if (bin.includes('/') && !fs.existsSync(bin)) continue;
+    try {
+      const { execSync } = require('child_process');
+      execSync(`"${bin}" -c "import numpy, cv2"`, { stdio: 'ignore', timeout: 3000 });
+      return bin;
+    } catch {
+      // not ready or modules missing
+    }
+  }
+
+  for (const bin of candidates) {
+    if (bin.includes('/') && fs.existsSync(bin)) return bin;
+  }
+  return 'python3';
+}
+
+/**
  * Executes high-precision facial swap and feathered blending using local ONNX pipeline
  */
 export async function executeLocalNeuralFaceSwap(
@@ -742,7 +797,7 @@ export async function executeLocalNeuralFaceSwap(
   targetImagePath: string,
   outputImagePath: string,
   mode: 'single' | 'couple' = 'single'
-): Promise<{ success: boolean; errorMessage?: string }> {
+): Promise<{ success: boolean; errorMessage?: string; isEnvironmentError?: boolean }> {
   return new Promise((resolve) => {
     const candidateScriptPaths = [
       path.resolve(process.cwd(), 'apps/api/scripts/faceswap.py'),
@@ -756,7 +811,7 @@ export async function executeLocalNeuralFaceSwap(
 
     if (!scriptPath) {
       console.warn('[FaceSwap] faceswap.py not found in candidate paths:', candidateScriptPaths);
-      return resolve({ success: false, errorMessage: 'Local faceswap script is not configured.' });
+      return resolve({ success: false, errorMessage: 'Local faceswap script is not configured.', isEnvironmentError: true });
     }
 
     if (!fs.existsSync(sourceImagePath) || !fs.existsSync(targetImagePath)) {
@@ -764,8 +819,9 @@ export async function executeLocalNeuralFaceSwap(
       return resolve({ success: false, errorMessage: 'Source or target image was not found on disk.' });
     }
 
-    console.log(`[FaceSwap] Transferring facial identity using ${scriptPath} (mode: ${mode})...`);
-    const py = spawn('python3', [scriptPath, sourceImagePath, targetImagePath, outputImagePath, mode]);
+    const pythonBin = getPythonExecutable();
+    console.log(`[FaceSwap] Transferring facial identity using ${scriptPath} with runtime ${pythonBin} (mode: ${mode})...`);
+    const py = spawn(pythonBin, [scriptPath, sourceImagePath, targetImagePath, outputImagePath, mode]);
 
     let stderrOutput = '';
     py.stdout.on('data', (d) => console.log(`[FaceSwap py] ${d.toString().trim()}`));
@@ -782,20 +838,25 @@ export async function executeLocalNeuralFaceSwap(
       } else {
         console.warn(`[FaceSwap] Process exited with code ${code}`);
         let friendlyErr = '';
-        if (stderrOutput.includes('Couple transformation requires at least 2')) {
+        let isEnvErr = false;
+        if (stderrOutput.includes('ModuleNotFoundError') || stderrOutput.includes('No module named')) {
+          friendlyErr = 'Server AI neural dependencies (Python / NumPy / InsightFace) are currently initializing on the cloud container. Please retry in a few moments or switch to Gemini AI mode.';
+          isEnvErr = true;
+        } else if (stderrOutput.includes('Couple transformation requires at least 2')) {
           friendlyErr = 'Couple transformation requires a photograph with two clearly visible faces. Only 1 face was detected.';
         } else if (stderrOutput.includes('No faces detected in uploaded photo')) {
           friendlyErr = 'No face was detected in the uploaded photograph. Please upload a clear photo with a visible face.';
-        } else if (stderrOutput.includes('Inswapper ONNX model not found')) {
-          friendlyErr = 'Local ONNX face swap model is missing on the server.';
+        } else if (stderrOutput.includes('Inswapper ONNX model not found') || stderrOutput.includes('Could not download inswapper_128.onnx')) {
+          friendlyErr = 'Local ONNX face swap model is initializing on the server.';
+          isEnvErr = true;
         }
-        resolve({ success: false, errorMessage: friendlyErr || undefined });
+        resolve({ success: false, errorMessage: friendlyErr || undefined, isEnvironmentError: isEnvErr });
       }
     });
 
     py.on('error', (err) => {
       console.error('[FaceSwap] Failed to start python process', err);
-      resolve({ success: false, errorMessage: 'Failed to start local python image processing engine.' });
+      resolve({ success: false, errorMessage: 'Failed to start local python image processing engine.', isEnvironmentError: true });
     });
   });
 }
