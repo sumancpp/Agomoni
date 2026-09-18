@@ -56,16 +56,11 @@ NEGATIVE_PROMPT = (
 )
 
 def get_hf_client(space_name: str) -> Client:
-    """Initialize Gradio Client with optional Hugging Face authentication token (supporting both token and hf_token kwarg)."""
+    """Initialize Gradio Client with optional Hugging Face authentication token."""
     hf_token = os.environ.get('HF_TOKEN') or os.environ.get('HUGGINGFACE_API_KEY')
     if hf_token:
         try:
             return Client(space_name, token=hf_token)
-        except TypeError:
-            try:
-                return Client(space_name, hf_token=hf_token)
-            except Exception as e:
-                print(f"[BengaliStylist] Authenticated Client init with hf_token for {space_name} failed ({e}), trying public...")
         except Exception as e:
             print(f"[BengaliStylist] Authenticated Client init for {space_name} failed ({e}), trying public...")
     return Client(space_name)
