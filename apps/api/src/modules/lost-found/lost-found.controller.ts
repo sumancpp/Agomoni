@@ -7,13 +7,25 @@ const router = Router();
 
 const createPostSchema = z.object({
   category: z.enum(['LOST_PERSON', 'LOST_ITEM']),
-  title: z.string().min(3).max(100),
-  nameOrItem: z.string().min(2).max(100),
-  age: z.number().min(0).max(120).optional(),
+  title: z.string().min(2, 'Title must be at least 2 characters').max(100),
+  nameOrItem: z.string().min(2, 'Name or item must be at least 2 characters').max(100),
+  age: z
+    .preprocess((val) => {
+      if (val === undefined || val === null || val === '') return undefined;
+      const num = Number(val);
+      if (isNaN(num)) return undefined;
+      // If user entered a birth year (e.g. 1920 - current year), automatically calculate age
+      const currentYear = new Date().getFullYear();
+      if (num >= 1900 && num <= currentYear) {
+        return currentYear - num;
+      }
+      return num;
+    }, z.number().min(0, 'Age must be at least 0').max(120, 'Age must be 120 or lower').optional())
+    .optional(),
   gender: z.string().optional(),
-  description: z.string().min(10).max(1000),
-  lastSeenArea: z.string().min(2).max(100),
-  lastSeenDate: z.string().refine((d) => !isNaN(Date.parse(d))),
+  description: z.string().min(2, 'Description must be at least 2 characters').max(1000),
+  lastSeenArea: z.string().min(2, 'Last seen area must be at least 2 characters').max(100),
+  lastSeenDate: z.string().refine((d) => !isNaN(Date.parse(d)), 'Invalid date format'),
   lastSeenTime: z.string().optional(),
   photoUrl: z.string().optional(),
   contactMethod: z.string().default('IN_APP_MESSAGE'),

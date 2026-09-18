@@ -252,7 +252,10 @@ export const LostFoundPage: React.FC = () => {
         alert(lang === 'bn' ? '🎉 রিপোর্ট সফলভাবে বিনামূল্যে প্রকাশিত হয়েছে! ম্যাচ ইঞ্জিন সক্রিয়।' : '🎉 Report published successfully for free! Match detection active.');
         fetchPosts();
       } else {
-        alert(data.message || (lang === 'bn' ? 'রিপোর্ট প্রকাশ করতে ত্রুটি হয়েছে।' : 'Error publishing report'));
+        const detailMsg = data.errors && data.errors.length > 0
+          ? data.errors.map((e: any) => `${e.field ? `${e.field}: ` : ''}${e.message}`).join('\n')
+          : data.message;
+        alert(detailMsg || (lang === 'bn' ? 'রিপোর্ট প্রকাশ করতে ত্রুটি হয়েছে।' : 'Error publishing report'));
       }
     } catch (err) {
       alert(lang === 'bn' ? 'সাবমিট করতে সমস্যা হয়েছে।' : 'Submission error');
@@ -896,12 +899,16 @@ export const LostFoundPage: React.FC = () => {
                 </div>
                 {category === 'LOST_PERSON' && (
                   <div>
-                    <label className="text-cream-300 block mb-1">Age / বয়স</label>
+                    <label className="text-cream-300 block mb-1">
+                      {lang === 'bn' ? 'বয়স / Age' : 'Age / বয়স'}
+                    </label>
                     <input
                       type="number"
+                      min="0"
+                      max="120"
                       value={age}
                       onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
-                      placeholder="e.g. 68"
+                      placeholder={lang === 'bn' ? 'যেমন: ৬৮ বা ২০০০' : 'e.g. 68 or 2000'}
                       className="w-full px-3 py-2 rounded-xl bg-night-850 border border-gold-500/30 text-cream-100 focus:outline-none focus:border-gold-400"
                     />
                   </div>
@@ -921,13 +928,16 @@ export const LostFoundPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-cream-300 block mb-1">Detailed Description *</label>
+                <label className="text-cream-300 block mb-1">
+                  {lang === 'bn' ? 'বিস্তারিত বিবরণ * (কমপক্ষে ২টি অক্ষর)' : 'Detailed Description * (min 2 characters)'}
+                </label>
                 <textarea
                   required
                   rows={3}
+                  minLength={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Clothing worn, identifying marks, distinctive features..."
+                  placeholder={lang === 'bn' ? 'পোশাকের বিবরণ, চেনার উপায়, বিশেষ চিহ্ন...' : 'Clothing worn, identifying marks, distinctive features...'}
                   className="w-full px-3 py-2 rounded-xl bg-night-850 border border-gold-500/30 text-cream-100 focus:outline-none focus:border-gold-400"
                 />
               </div>

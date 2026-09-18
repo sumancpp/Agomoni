@@ -15,13 +15,16 @@ export const errorHandler = (
   });
 
   if (err instanceof ZodError) {
+    const errorList = err.errors.map((e) => ({
+      field: e.path.join('.'),
+      message: e.message,
+    }));
+    const summary = errorList.map((e) => `${e.field ? `${e.field}: ` : ''}${e.message}`).join(', ');
+
     return res.status(400).json({
       success: false,
-      message: 'Validation failed',
-      errors: err.errors.map((e) => ({
-        field: e.path.join('.'),
-        message: e.message,
-      })),
+      message: summary || 'Validation failed',
+      errors: errorList,
     });
   }
 
