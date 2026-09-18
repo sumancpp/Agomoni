@@ -7,6 +7,7 @@ import PujaCanvas from '../puja-mode/PujaCanvas';
 import MiniMusicPlayer from '../music/MiniMusicPlayer';
 import FullMusicPlayerModal from '../music/FullMusicPlayerModal';
 import SplashScreen from '../common/SplashScreen';
+import { PwaManager } from '../pwa/PwaManager';
 import { useMusicPlayer, initYouTubeListening } from '../../context/MusicPlayerContext';
 
 export const AppShell: React.FC = () => {
@@ -16,6 +17,9 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col bg-transparent text-cream-100 relative selection:bg-sindoor-700 selection:text-white ${isChatPage ? 'h-screen h-[100dvh] overflow-hidden' : ''}`}>
+      {/* PWA Lifecycle Manager (Updates and Non-intrusive Install Prompts) */}
+      <PwaManager />
+
       {/* Festive Splash Screen Overlay on Initial Entry */}
       <SplashScreen />
 

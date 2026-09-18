@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import FestiveButton from '../common/FestiveButton';
+import { PwaInstallButton } from '../pwa/PwaInstallButton';
 import { apiFetch, resolveImageUrl } from '../../lib/api';
 
 interface NotificationItem {
@@ -247,6 +248,9 @@ export const Navbar: React.FC = () => {
             <ShieldAlert size={16} />
           </Link>
 
+          {/* PWA Install Button (Desktop/Tablet) */}
+          <PwaInstallButton variant="navbar" className="hidden lg:inline-flex" />
+
           {/* Language Switcher (Desktop/Tablet) */}
           <button
             onClick={toggleLang}
@@ -484,6 +488,11 @@ export const Navbar: React.FC = () => {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* PWA Install Button inside Mobile Drawer */}
+            <div className="pt-2">
+              <PwaInstallButton variant="card" />
             </div>
 
             {/* Auth / Account Controls inside Drawer */}

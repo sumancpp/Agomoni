@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, ShieldCheck, Sparkles } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import AlponaDivider from '../common/AlponaDivider';
+import { PwaInstallButton } from '../pwa/PwaInstallButton';
 
 export const Footer: React.FC = () => {
   const { t } = useLanguage();
@@ -34,6 +35,11 @@ export const Footer: React.FC = () => {
             <div className="flex items-center gap-2 text-gold-400 text-xs pt-1">
               <span>🪔</span>
               <span className="text-gold-300/80 font-bengali">মায়ের আগমনী বার্তা</span>
+            </div>
+
+            {/* PWA Install Button in Footer */}
+            <div className="pt-2">
+              <PwaInstallButton variant="compact" />
             </div>
           </div>
 
