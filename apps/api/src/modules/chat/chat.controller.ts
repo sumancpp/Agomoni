@@ -27,30 +27,8 @@ const reportSchema = z.object({
 
 // Helper: Check if user can initiate/unlock a new conversation
 export async function checkChatEntitlement(userId: string): Promise<{ canChat: boolean; freeChatsLeft: number }> {
-  // Check if user has unlimited chat entitlement
-  const entitlement = await prisma.entitlement.findUnique({
-    where: {
-      userId_productType: {
-        userId,
-        productType: 'PUJA_DATE_UNLIMITED_CHAT',
-      },
-    },
-  });
-
-  if (entitlement && entitlement.active) {
-    return { canChat: true, freeChatsLeft: 999 };
-  }
-
-  // Count distinct conversations user is participant in
-  const count = await prisma.conversationParticipant.count({
-    where: { userId },
-  });
-
-  const freeChatsLeft = Math.max(0, 3 - count);
-  return {
-    canChat: count < 3,
-    freeChatsLeft,
-  };
+  // All features currently 100% free of cost: unlimited chats for everyone
+  return { canChat: true, freeChatsLeft: 9999 };
 }
 
 // GET /api/v1/chat/conversations
@@ -148,7 +126,8 @@ router.post('/conversations', authenticate, async (req: AuthenticatedRequest, re
       });
     }
 
-    // Check 3 Free Conversation Limit
+    // Payment check commented out: All users have 100% free unlimited conversations
+    /*
     const { canChat, freeChatsLeft } = await checkChatEntitlement(currentUserId);
     if (!canChat) {
       return res.status(402).json({
@@ -157,9 +136,11 @@ router.post('/conversations', authenticate, async (req: AuthenticatedRequest, re
         productId: 'PUJA_DATE_UNLIMITED_CHAT',
         priceInPaise: 4900,
         priceFormatted: '₹49',
-        message: 'আপনার ৩টি ফ্রি চ্যাট শেষ হয়েছে। ৪র্থ ব্যক্তি থেকে সবার সাথে আনলিমিটেড চ্যাট করতে মাত্র ₹৪৯ দিয়ে আনলক করুন। (First 3 chats were free. Unlock chatting with 4th person onwards for ₹49).',
+        message: 'আপনার ৩টি ফ্রি চ্যাট শেষ হয়েছে। ৪র্থ ব্যক্তি থেকে সবার সাথে আনলিমিটেড চ্যাট করতে মাত্র ₹৪৯ দিয়ে আনলক করুন।',
       });
     }
+    */
+    const freeChatsLeft = 9999;
 
     // Create new conversation
     const newConv = await prisma.conversation.create({

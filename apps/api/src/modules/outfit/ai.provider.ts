@@ -218,27 +218,33 @@ export async function generateHuggingFaceImage(prompt: string): Promise<string |
  * preventing cartoon/airbrushed digital art styles.
  */
 export async function generateOpenAIImage(prompt: string): Promise<string | null> {
-  const apiKey = config.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+  const apiKey = (config as any).GPT_IMAGE_API_KEY || config.OPENAI_API_KEY || process.env.GPT_IMAGE_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
 
+  const rawBaseUrl = (config as any).GPT_IMAGE_BASE_URL || process.env.GPT_IMAGE_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.openai.com';
+  const endpoint = rawBaseUrl.endsWith('/v1/images/generations')
+    ? rawBaseUrl
+    : `${rawBaseUrl.replace(/\/+$/, '')}/v1/images/generations`;
+  const modelName = (config as any).GPT_IMAGE_MODEL || process.env.GPT_IMAGE_MODEL || 'dall-e-3';
+
   try {
-    console.log('[OpenAI] Requesting DALL-E 3 portrait with natural photographic style...');
+    console.log(`[OpenAI/GPT-Image] Requesting image generation (${modelName}) from ${endpoint}...`);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000);
 
-    const res = await fetch('https://api.openai.com/v1/images/generations', {
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: modelName,
         prompt,
         n: 1,
         size: '1024x1024',
         quality: 'standard',
-        style: 'natural', // Crucial for real human camera photo
+        style: 'natural',
       }),
       signal: controller.signal,
     });
@@ -440,6 +446,26 @@ export class DevelopmentMockProvider implements IAIProvider {
         const ok = await executeBengaliAIStylist(sourceLocalPath, input.gender, input.style, input.pujaDay, stylistLocalPath, input.aiMode);
         if (ok && fs.existsSync(stylistLocalPath)) {
           resultImageUrl = `/uploads/${stylistFilename}`;
+        } else {
+          const isFemale = input.gender === 'FEMALE';
+          const isModern = input.style === 'Modern' || input.style === 'Casual Puja' || input.style === 'Night Puja';
+          const templateRelative = isFemale
+            ? (isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg')
+            : (isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg');
+          const candidateTemplatePaths = [
+            path.resolve(process.cwd(), templateRelative),
+            path.resolve(process.cwd(), 'apps/api', templateRelative),
+            path.resolve(localDir, '../../..', templateRelative),
+            path.resolve(localDir, '../../../..', templateRelative),
+          ];
+          const templatePath = candidateTemplatePaths.find((p) => fs.existsSync(p));
+          if (templatePath) {
+            console.log(`[DevelopmentMockProvider] Direct faceswap fallback onto template: ${templatePath}...`);
+            const swapped = await executeLocalNeuralFaceSwap(sourceLocalPath, templatePath, stylistLocalPath);
+            if (swapped && fs.existsSync(stylistLocalPath)) {
+              resultImageUrl = `/uploads/${stylistFilename}`;
+            }
+          }
         }
       }
     } catch (e) {
@@ -461,7 +487,7 @@ export class QwenImageProvider implements IAIProvider {
   private fallbackProvider = new DevelopmentMockProvider();
 
   async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
-    const apiKey = config.QWEN_API_KEY || config.AI_API_KEY;
+    const apiKey = (config as any).QWEN_IMAGE_API_KEY || config.QWEN_API_KEY || process.env.QWEN_IMAGE_API_KEY || config.AI_API_KEY;
 
     if (!apiKey) {
       console.warn('QWEN_API_KEY not set in .env, generating with neural diffusion engine');
@@ -643,6 +669,26 @@ Return ONLY valid JSON.`;
         if (styled && fs.existsSync(stylistLocalPath)) {
           resultImageUrl = `/uploads/${stylistFilename}`;
           console.log('[GeminiOutfitProvider] Successfully generated personalized real Bengali portrait:', resultImageUrl);
+        } else {
+          const isFemale = input.gender === 'FEMALE';
+          const isModern = input.style === 'Modern' || input.style === 'Casual Puja' || input.style === 'Night Puja';
+          const templateRelative = isFemale
+            ? (isModern ? 'uploads/outfits/female-modern.jpg' : 'uploads/outfits/female-traditional.jpg')
+            : (isModern ? 'uploads/outfits/male-modern.jpg' : 'uploads/outfits/male-traditional.jpg');
+          const candidateTemplatePaths = [
+            path.resolve(process.cwd(), templateRelative),
+            path.resolve(process.cwd(), 'apps/api', templateRelative),
+            path.resolve(localDir, '../../..', templateRelative),
+            path.resolve(localDir, '../../../..', templateRelative),
+          ];
+          const templatePath = candidateTemplatePaths.find((p) => fs.existsSync(p));
+          if (templatePath) {
+            console.log(`[GeminiOutfitProvider] Direct faceswap fallback onto template: ${templatePath}...`);
+            const swapped = await executeLocalNeuralFaceSwap(sourceLocalPath, templatePath, stylistLocalPath);
+            if (swapped && fs.existsSync(stylistLocalPath)) {
+              resultImageUrl = `/uploads/${stylistFilename}`;
+            }
+          }
         }
       } catch (stylistErr) {
         console.warn('[GeminiOutfitProvider] Bengali AI Stylist step failed, keeping photorealistic neural generation:', stylistErr);
@@ -736,6 +782,66 @@ export async function executeBengaliAIStylist(
 
     py.on('error', (err) => {
       console.error('[BengaliStylist] Failed to start python process', err);
+      resolve(false);
+    });
+  });
+}
+
+/**
+ * Executes high-precision facial swap and CodeFormer/GFPGAN restoration onto target template
+ */
+export async function executeLocalNeuralFaceSwap(
+  sourceImagePath: string,
+  targetImagePath: string,
+  outputImagePath: string
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const candidateScriptPaths = [
+      path.resolve(process.cwd(), 'apps/api/scripts/faceswap.py'),
+      path.resolve(process.cwd(), 'scripts/faceswap.py'),
+      path.resolve(localDir, '../../scripts/faceswap.py'),
+      path.resolve(localDir, '../../../scripts/faceswap.py'),
+      path.resolve(localDir, '../../../../scripts/faceswap.py'),
+    ];
+
+    const scriptPath = candidateScriptPaths.find((p) => fs.existsSync(p));
+
+    if (!scriptPath) {
+      console.warn('[FaceSwap] faceswap.py not found in candidate paths:', candidateScriptPaths);
+      return resolve(false);
+    }
+
+    if (!fs.existsSync(sourceImagePath) || !fs.existsSync(targetImagePath)) {
+      console.warn('[FaceSwap] Source or target image not found:', { sourceImagePath, targetImagePath });
+      return resolve(false);
+    }
+
+    const hfToken = config.HF_TOKEN || config.HUGGINGFACE_API_KEY || process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || '';
+
+    console.log(`[FaceSwap] Transferring facial identity using ${scriptPath}...`);
+    const py = spawn('python3', [scriptPath, sourceImagePath, targetImagePath, outputImagePath], {
+      env: {
+        ...process.env,
+        HF_TOKEN: hfToken,
+        HUGGINGFACE_API_KEY: hfToken,
+      },
+    });
+
+    py.stdout.on('data', (d) => console.log(`[FaceSwap py] ${d.toString().trim()}`));
+    py.stderr.on('data', (d) => console.error(`[FaceSwap py err] ${d.toString().trim()}`));
+
+    py.on('close', (code) => {
+      if (code === 0 && fs.existsSync(outputImagePath)) {
+        console.log('[FaceSwap] Face swap executed successfully!');
+        resolve(true);
+      } else {
+        console.warn(`[FaceSwap] Process exited with code ${code}`);
+        resolve(false);
+      }
+    });
+
+    py.on('error', (err) => {
+      console.error('[FaceSwap] Failed to start python process', err);
       resolve(false);
     });
   });

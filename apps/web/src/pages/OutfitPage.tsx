@@ -866,7 +866,8 @@ export const OutfitPage: React.FC = () => {
         </div>
       )}
 
-      {/* Unlimited Unlock Modal (₹29) */}
+      {/* Payment Modal commented out: All features are currently 100% free */}
+      {/*
       {paymentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
           <div className="bg-night-900 border-2 border-gold-500 rounded-3xl p-6 max-w-md w-full text-center space-y-5 shadow-2xl">
@@ -902,6 +903,7 @@ export const OutfitPage: React.FC = () => {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 };

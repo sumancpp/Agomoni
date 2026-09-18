@@ -237,48 +237,12 @@ router.get('/:id/contact-status', authenticate, async (req: AuthenticatedRequest
       return res.status(404).json({ success: false, message: 'Report not found' });
     }
 
-    // If viewing own post
-    if (post.userId === userId) {
-      return res.json({ success: true, isUnlocked: true, isSelf: true, priceInPaise: 0 });
-    }
-
-    // If admin
-    if (req.user!.role === 'ADMIN' || req.user!.role === 'SUPER_ADMIN') {
-      return res.json({ success: true, isUnlocked: true, isSelf: false, priceInPaise: 0 });
-    }
-
-    // Check if user has LOST_FOUND_CONTACT entitlement
-    const entitlement = await prisma.entitlement.findUnique({
-      where: {
-        userId_productType: {
-          userId,
-          productType: 'LOST_FOUND_CONTACT',
-        },
-      },
-    });
-
-    if (entitlement && entitlement.active) {
-      return res.json({ success: true, isUnlocked: true, isSelf: false, priceInPaise: 0 });
-    }
-
-    // Check if user has paid specifically for this contact
-    const paidRecord = await prisma.payment.findFirst({
-      where: {
-        userId,
-        productId: 'LOST_FOUND_CONTACT',
-        status: 'PAID',
-      },
-    });
-
-    if (paidRecord) {
-      return res.json({ success: true, isUnlocked: true, isSelf: false, priceInPaise: 0 });
-    }
-
+    // All features currently 100% free of cost: reporter contact unlocked for everyone
     return res.json({
       success: true,
-      isUnlocked: false,
-      isSelf: false,
-      priceInPaise: 4900,
+      isUnlocked: true,
+      isSelf: post.userId === userId,
+      priceInPaise: 0,
       productId: 'LOST_FOUND_CONTACT',
     });
   } catch (error) {
@@ -291,7 +255,7 @@ const contactPosterSchema = z.object({
   phone: z.string().optional(),
 });
 
-// POST /api/v1/lost-found/:id/contact (Send message & unlock chat with reporter for ₹49)
+// POST /api/v1/lost-found/:id/contact (Send message & unlock chat with reporter - currently free)
 router.post('/:id/contact', authenticate, async (req: AuthenticatedRequest, res: Response, next) => {
   try {
     const postId = req.params.id;
@@ -317,7 +281,8 @@ router.post('/:id/contact', authenticate, async (req: AuthenticatedRequest, res:
       return res.status(400).json({ success: false, message: 'You cannot message your own report.' });
     }
 
-    // Check payment / unlock status
+    // Payment check commented out: Free access mode active for all users
+    /*
     const isDevelopment = process.env.NODE_ENV === 'development';
     const isAdmin = req.user!.role === 'ADMIN' || req.user!.role === 'SUPER_ADMIN';
 
@@ -349,6 +314,7 @@ router.post('/:id/contact', authenticate, async (req: AuthenticatedRequest, res:
         message: 'A ₹49 connection fee is required to contact the reporter.',
       });
     }
+    */
 
     // 1. Create or retrieve direct Chat Conversation between sender and poster
     let conversation = await prisma.conversation.findFirst({

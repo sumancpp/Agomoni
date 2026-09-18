@@ -26,33 +26,8 @@ const generateSchema = z.object({
 
 // Helper: Check free generation limits server-side
 async function checkOutfitEntitlement(userId: string): Promise<{ canGenerate: boolean; generationsLeft: number; totalCount: number }> {
-  // Check if user has unlimited outfit entitlement
-  const entitlement = await prisma.entitlement.findUnique({
-    where: {
-      userId_productType: {
-        userId,
-        productType: 'OUTFIT_UNLIMITED',
-      },
-    },
-  });
-
-  if (entitlement && entitlement.active || process.env.NODE_ENV === 'development') {
-    return { canGenerate: true, generationsLeft: 9999, totalCount: 0 };
-  }
-
-  const count = await prisma.outfitGeneration.count({
-    where: {
-      userId,
-      status: 'COMPLETED',
-    },
-  });
-
-  const generationsLeft = Math.max(0, 5 - count);
-  return {
-    canGenerate: count < 5,
-    generationsLeft,
-    totalCount: count,
-  };
+  // All features currently 100% free of cost: unlimited outfit generations
+  return { canGenerate: true, generationsLeft: 9999, totalCount: 0 };
 }
 
 // GET /api/v1/outfit/status
@@ -74,8 +49,10 @@ router.get('/status', authenticate, async (req: AuthenticatedRequest, res: Respo
 // GET /api/v1/outfit/history
 router.get('/history', authenticate, async (req: AuthenticatedRequest, res: Response, next) => {
   try {
+    const userId = req.user!.id;
+
     const generations = await prisma.outfitGeneration.findMany({
-      where: { userId: req.user!.id },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 20,
     });
@@ -95,6 +72,8 @@ router.post('/generate', authenticate, async (req: AuthenticatedRequest, res: Re
     const userId = req.user!.id;
     const data = generateSchema.parse(req.body);
 
+    // Payment check commented out: 100% free unlimited outfit generation for everyone
+    /*
     const { canGenerate, generationsLeft } = await checkOutfitEntitlement(userId);
     if (!canGenerate) {
       return res.status(402).json({
@@ -106,6 +85,8 @@ router.post('/generate', authenticate, async (req: AuthenticatedRequest, res: Re
         message: 'You have used all 5 free generations. Unlock Unlimited for ₹29.',
       });
     }
+    */
+    const generationsLeft = 9999;
 
     // Generate outfit using selected AI provider (Qwen or fallback)
     const aiProvider = getAIProvider();

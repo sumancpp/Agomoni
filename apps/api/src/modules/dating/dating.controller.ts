@@ -286,7 +286,8 @@ router.post('/like', authenticate, require18Plus, async (req: AuthenticatedReque
       });
 
       if (!conversation) {
-        // Check 3 Free Conversations limit before creating 4th conversation
+        // Payment check commented out: All users have 100% free unlimited conversations
+        /*
         const { canChat } = await checkChatEntitlement(currentUserId);
         if (!canChat) {
           return res.status(402).json({
@@ -296,9 +297,10 @@ router.post('/like', authenticate, require18Plus, async (req: AuthenticatedReque
             productId: 'PUJA_DATE_UNLIMITED_CHAT',
             priceInPaise: 4900,
             priceFormatted: '₹49',
-            message: 'ইটস এ ম্যাচ! কিন্তু আপনার ৩টি ফ্রি চ্যাট শেষ হয়েছে। ৪র্থ ব্যক্তি থেকে সবার সাথে আনলিমিটেড চ্যাট করতে মাত্র ₹৪৯ দিয়ে আনলক করুন। (First 3 chats were free. Unlock chatting with 4th person onwards for ₹49).',
+            message: 'ইটস এ ম্যাচ! কিন্তু আপনার ৩টি ফ্রি চ্যাট শেষ হয়েছে। ৪র্থ ব্যক্তি থেকে সবার সাথে আনলিমিটেড চ্যাট করতে মাত্র ₹৪৯ দিয়ে আনলক করুন।',
           });
         }
+        */
 
         conversation = await prisma.conversation.create({
           data: {

@@ -56,14 +56,36 @@ NEGATIVE_PROMPT = (
 )
 
 def get_hf_client(space_name: str) -> Client:
-    """Initialize Gradio Client with optional Hugging Face authentication token."""
+    """Initialize Gradio Client with optional Hugging Face authentication token (supporting both token and hf_token kwarg)."""
     hf_token = os.environ.get('HF_TOKEN') or os.environ.get('HUGGINGFACE_API_KEY')
     if hf_token:
         try:
-            return Client(space_name, hf_token=hf_token)
+            return Client(space_name, token=hf_token)
+        except TypeError:
+            try:
+                return Client(space_name, hf_token=hf_token)
+            except Exception as e:
+                print(f"[BengaliStylist] Authenticated Client init with hf_token for {space_name} failed ({e}), trying public...")
         except Exception as e:
             print(f"[BengaliStylist] Authenticated Client init for {space_name} failed ({e}), trying public...")
     return Client(space_name)
+
+def save_image_result(src_file: str, dst_file: str) -> bool:
+    """Saves output image as clean, high-resolution JPEG, handling WebP and mode conversions."""
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(dst_file)), exist_ok=True)
+        try:
+            from PIL import Image
+            with Image.open(src_file) as img:
+                rgb_img = img.convert('RGB')
+                rgb_img.save(dst_file, format='JPEG', quality=95, optimize=True)
+            return True
+        except Exception as pil_err:
+            shutil.copy(src_file, dst_file)
+            return True
+    except Exception as e:
+        print(f"[BengaliStylist] Failed to save result image: {e}")
+        return False
 
 def try_idm_vton(source_path: str, garment_path: str, garment_des: str, output_path: str) -> bool:
     """1. IDM-VTON (Virtual Try-On Network): Drapes authentic Bengali attire onto user while keeping 100% real face."""
@@ -80,11 +102,12 @@ def try_idm_vton(source_path: str, garment_path: str, garment_des: str, output_p
             seed=42,
             api_name='/tryon'
         )
-        if res and res[0] and os.path.exists(res[0]):
-            os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-            shutil.copy(res[0], output_path)
-            print(f"[BengaliStylist] SUCCESS with yisol/IDM-VTON: Saved to {output_path}")
-            return True
+        if res and len(res) > 0:
+            target_img = res[0] if isinstance(res, (list, tuple)) else res
+            if target_img and os.path.exists(target_img):
+                if save_image_result(target_img, output_path):
+                    print(f"[BengaliStylist] SUCCESS with yisol/IDM-VTON: Saved to {output_path}")
+                    return True
     except Exception as e:
         print(f"[BengaliStylist] IDM-VTON failed/busy: {e}")
     return False
@@ -106,13 +129,18 @@ def try_photomaker(source_path: str, prompt: str, output_path: str) -> bool:
             seed=42,
             api_name='/generate_image'
         )
-        if res and len(res[0]) > 0 and 'image' in res[0][0]:
-            img_file = res[0][0]['image']
-            if os.path.exists(img_file):
-                os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-                shutil.copy(img_file, output_path)
-                print(f"[BengaliStylist] SUCCESS with PhotoMaker: Saved to {output_path}")
-                return True
+        if res and len(res) > 0:
+            item = res[0]
+            if isinstance(item, list) and len(item) > 0:
+                img_file = item[0].get('image') if isinstance(item[0], dict) else item[0]
+            elif isinstance(item, dict):
+                img_file = item.get('image')
+            else:
+                img_file = item
+            if img_file and os.path.exists(img_file):
+                if save_image_result(img_file, output_path):
+                    print(f"[BengaliStylist] SUCCESS with PhotoMaker: Saved to {output_path}")
+                    return True
     except Exception as e:
         print(f"[BengaliStylist] PhotoMaker failed/busy: {e}")
     return False
@@ -141,11 +169,12 @@ def try_instantid(source_path: str, prompt: str, output_path: str) -> bool:
             enhance_face_region=True,
             api_name='/generate_image'
         )
-        if res and res[0] and os.path.exists(res[0]):
-            os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-            shutil.copy(res[0], output_path)
-            print(f"[BengaliStylist] SUCCESS with InstantID: Saved to {output_path}")
-            return True
+        if res and len(res) > 0:
+            img_file = res[0] if isinstance(res, (list, tuple)) else res
+            if img_file and os.path.exists(img_file):
+                if save_image_result(img_file, output_path):
+                    print(f"[BengaliStylist] SUCCESS with InstantID: Saved to {output_path}")
+                    return True
     except Exception as e:
         print(f"[BengaliStylist] InstantID failed/busy: {e}")
     return False
@@ -161,9 +190,9 @@ def try_faceswap_restoration(source_path: str, template_path: str, output_path: 
             api_name='/swap_faces'
         )
         if res and os.path.exists(res):
-            os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-            shutil.copy(res, output_path)
-            print(f"[BengaliStylist] SUCCESS with CodeFormer Face Swap: Saved to {output_path}")
+            if save_image_result(res, output_path):
+                print(f"[BengaliStylist] SUCCESS with CodeFormer Face Swap: Saved to {output_path}")
+                return True
     except Exception as e:
         print(f"[BengaliStylist] Cloud FaceSwap failed/busy: {e}")
 
@@ -234,20 +263,20 @@ def main():
             sys.exit(0)
 
     # AUTO Mode: Cascades through the best identity-preserving models
-    # 1. IDM-VTON (Virtual Try-On onto user's actual body & face)
+    # 1. High-Res Face Restoration Face Swap on Bengali DSLR template (100% exact facial match)
+    if try_faceswap_restoration(args.source, template_full_path, args.output):
+        sys.exit(0)
+
+    # 2. IDM-VTON (Virtual Try-On onto user's actual body & face)
     if try_idm_vton(args.source, template_full_path, config['garment_des'], args.output):
         sys.exit(0)
 
-    # 2. PhotoMaker (Authentic festive Durga Puja photo session)
+    # 3. PhotoMaker (Authentic festive Durga Puja photo session)
     if try_photomaker(args.source, config['photomaker_prompt'], args.output):
         sys.exit(0)
 
-    # 3. InstantID (Zero-shot identity preservation)
+    # 4. InstantID (Zero-shot identity preservation)
     if try_instantid(args.source, config['instantid_prompt'], args.output):
-        sys.exit(0)
-
-    # 4. High-Res Face Restoration Face Swap on Bengali DSLR template
-    if try_faceswap_restoration(args.source, template_full_path, args.output):
         sys.exit(0)
 
     print("[BengaliStylist] All AI styling attempts failed.", file=sys.stderr)

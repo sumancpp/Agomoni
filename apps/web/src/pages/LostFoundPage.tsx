@@ -303,14 +303,11 @@ export const LostFoundPage: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success) {
-        setIsContactUnlocked(data.isUnlocked);
-      } else {
-        setIsContactUnlocked(false);
-      }
+      // Free mode active: Direct messaging with reporter is 100% free of cost
+      setIsContactUnlocked(true);
     } catch (err) {
       console.error('Failed to check contact status', err);
-      setIsContactUnlocked(false);
+      setIsContactUnlocked(true);
     } finally {
       setIsCheckingContactStatus(false);
     }

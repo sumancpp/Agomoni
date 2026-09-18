@@ -33,8 +33,11 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
-/** Opens Razorpay in production; development mock orders retain the local test flow. */
+/** Opens Razorpay in production; currently bypassed so every feature is free of cost. */
 export async function completePayment(token: string, order: Order): Promise<boolean> {
+  // Free mode active: All features are currently free of cost
+  return true;
+  /*
   if (order.orderId.startsWith('order_dev_')) {
     return verify(token, order.orderId, `pay_dev_${Date.now()}`, 'dev_verified_sig');
   }
@@ -55,4 +58,5 @@ export async function completePayment(token: string, order: Order): Promise<bool
     });
     checkout.open();
   });
+  */
 }

@@ -23,8 +23,12 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   REPLICATE_API_TOKEN: z.string().optional(),
   QWEN_API_KEY: z.string().optional(),
+  QWEN_IMAGE_API_KEY: z.string().optional(),
   QWEN_BASE_URL: z.string().optional(),
   QWEN_MODEL: z.string().default('wanx-v1'),
+  GPT_IMAGE_API_KEY: z.string().optional(),
+  GPT_IMAGE_BASE_URL: z.string().optional(),
+  GPT_IMAGE_MODEL: z.string().default('gpt-image-2'),
   UPLOAD_DIR: z.string().default('./uploads'),
   MAX_FILE_SIZE_MB: z.string().default('5').transform((val) => parseInt(val, 10)),
 });

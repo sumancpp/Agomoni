@@ -26,13 +26,18 @@ COPY apps/api/package.json ./apps/api/
 
 RUN npm install --omit=dev --workspace=@agomoni/api
 
+RUN apk add --no-cache python3 py3-pip
+RUN pip install --no-cache-dir --break-system-packages gradio_client
+
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/scripts ./apps/api/scripts
+COPY --from=builder /app/apps/api/uploads/outfits ./apps/api/uploads/outfits
 COPY --from=builder /app/apps/api/src/prisma ./apps/api/src/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 WORKDIR /app/apps/api
-RUN mkdir -p uploads
+RUN mkdir -p uploads/outfits
 
 EXPOSE 4000
 
