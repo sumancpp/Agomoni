@@ -1,6 +1,23 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 import { z } from 'zod';
 
+const localDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
+
+const candidateEnvFiles = [
+  path.resolve(process.cwd(), 'apps/api/.env'),
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(localDir, '../../.env'),
+  path.resolve(localDir, '../../../.env'),
+  path.resolve(localDir, '../../../../.env'),
+];
+
+for (const envFile of candidateEnvFiles) {
+  if (fs.existsSync(envFile)) {
+    dotenv.config({ path: envFile });
+  }
+}
 dotenv.config();
 
 const envSchema = z.object({

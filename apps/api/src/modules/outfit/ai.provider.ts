@@ -202,11 +202,35 @@ export async function transformWithOpenAI(
   sourceImagePath: string,
   options: OutfitGenerationInput
 ): Promise<string | null> {
-  const apiKey =
+  let apiKey =
     (config as any).GPT_IMAGE_API_KEY ||
     config.OPENAI_API_KEY ||
     process.env.GPT_IMAGE_API_KEY ||
     process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    const candidateEnvPaths = [
+      path.resolve(process.cwd(), 'apps/api/.env'),
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(localDir, '../../.env'),
+      path.resolve(localDir, '../../../.env'),
+      path.resolve(localDir, '../../../../.env'),
+    ];
+    for (const f of candidateEnvPaths) {
+      if (fs.existsSync(f)) {
+        try {
+          const text = fs.readFileSync(f, 'utf8');
+          const m = text.match(/^OPENAI_API_KEY\s*=\s*["']?([^"'\r\n]+)["']?/m);
+          if (m && m[1]) {
+            apiKey = m[1].trim();
+            break;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
 
   if (!apiKey) {
     console.warn('[OpenAI Primary] No OPENAI_API_KEY available in backend environment.');
