@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { spawn } from 'child_process';
 import { File as BufferFile } from 'node:buffer';
 import OpenAI, { toFile } from 'openai';
@@ -565,6 +566,42 @@ export class LocalPhotorealisticProvider implements IAIProvider {
     const outputFilename = `agomoni-festive-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
     const outputLocalPath = path.resolve(targetDir, outputFilename);
 
+    const geminiKey =
+      config.GEMINI_API_KEY ||
+      config.GEMINI_API_KEY_2 ||
+      process.env.GEMINI_API_KEY ||
+      process.env.GEMINI_API_KEY_2;
+    const openAiKey =
+      (config as any).GPT_IMAGE_API_KEY ||
+      config.OPENAI_API_KEY ||
+      process.env.GPT_IMAGE_API_KEY ||
+      process.env.OPENAI_API_KEY;
+
+    const isLowMemoryCloudContainer =
+      process.env.RENDER === 'true' ||
+      (typeof os.totalmem === 'function' && os.totalmem() < 1024 * 1024 * 1024);
+
+    // On low-memory cloud containers (e.g. Render 512MB RAM free tier), heavy 550MB ONNX models cause container OOM crash.
+    // Proactively route through Cloud AI to preserve uptime and deliver instant festive portraits.
+    if (isLowMemoryCloudContainer && geminiKey) {
+      console.log('[Local Provider] Low-memory cloud container detected (Render / <1GB RAM). Bypassing heavy local 550MB ONNX model. Transforming via Gemini Cloud AI...');
+      try {
+        const geminiResult = await transformWithGemini(sourceLocalPath, input, geminiKey);
+        if (geminiResult) {
+          console.log('[Local Provider] Gemini Cloud generation succeeded:', geminiResult);
+          const stylingInfo = getStylingInfo(input.gender, input.pujaDay);
+          return {
+            resultImageUrl: geminiResult,
+            ...stylingInfo,
+            provider: 'GEMINI_CLOUD',
+            mode: 'Gemini Cloud Festive Portrait (Cloud Container Mode)',
+          };
+        }
+      } catch (geminiErr) {
+        console.warn('[Local Provider] Proactive Gemini cloud attempt failed:', geminiErr);
+      }
+    }
+
     console.log(`[Local Provider] Processing face swap with ${templatePath}...`);
     const swapResult = await executeLocalNeuralFaceSwap(
       sourceLocalPath,
@@ -574,11 +611,9 @@ export class LocalPhotorealisticProvider implements IAIProvider {
     );
 
     if (!swapResult.success || !fs.existsSync(outputLocalPath)) {
-      // If local neural engine is initializing in this cloud container and Gemini API key is available,
-      // seamlessly auto-fallback to Gemini AI transformation so user gets their festive portrait.
-      const geminiKey = config.GEMINI_API_KEY || config.GEMINI_API_KEY_2 || process.env.GEMINI_API_KEY;
-      if (swapResult.isEnvironmentError && geminiKey) {
-        console.log('[Local Provider] Neural dependencies initializing on container. Auto-fallback to Gemini AI...');
+      // Seamlessly auto-fallback to Cloud AI so the user always gets their festive portrait
+      if (geminiKey) {
+        console.log('[Local Provider] Local face swap unavailable. Seamless auto-fallback to Gemini AI...');
         try {
           const geminiResult = await transformWithGemini(sourceLocalPath, input, geminiKey);
           if (geminiResult) {
@@ -593,6 +628,25 @@ export class LocalPhotorealisticProvider implements IAIProvider {
           }
         } catch (fallbackErr) {
           console.warn('[Local Provider] Gemini auto-fallback attempt failed:', fallbackErr);
+        }
+      }
+
+      if (openAiKey) {
+        console.log('[Local Provider] Local face swap unavailable. Seamless auto-fallback to OpenAI HD...');
+        try {
+          const openAiResult = await transformWithOpenAI(sourceLocalPath, input);
+          if (openAiResult) {
+            console.log('[Local Provider] OpenAI auto-fallback succeeded:', openAiResult);
+            const stylingInfo = getStylingInfo(input.gender, input.pujaDay);
+            return {
+              resultImageUrl: openAiResult,
+              ...stylingInfo,
+              provider: 'OPENAI_HD',
+              mode: 'OpenAI HD (Auto Fallback)',
+            };
+          }
+        } catch (fallbackErr) {
+          console.warn('[Local Provider] OpenAI auto-fallback attempt failed:', fallbackErr);
         }
       }
 
@@ -799,6 +853,20 @@ export async function executeLocalNeuralFaceSwap(
   mode: 'single' | 'couple' = 'single'
 ): Promise<{ success: boolean; errorMessage?: string; isEnvironmentError?: boolean }> {
   return new Promise((resolve) => {
+    // Check if running on low-memory container (such as Render 512MB RAM tier)
+    const isLowMemoryContainer =
+      process.env.RENDER === 'true' ||
+      (typeof os.totalmem === 'function' && os.totalmem() < 1024 * 1024 * 1024);
+
+    if (isLowMemoryContainer) {
+      console.warn('[FaceSwap] Low-memory cloud container detected (Render / <1GB RAM). Skipping local 550MB ONNX model to avoid container OOM crash.');
+      return resolve({
+        success: false,
+        errorMessage: 'Local ONNX face swap is not suitable for this low-memory cloud container. Auto-switching to Cloud AI.',
+        isEnvironmentError: true,
+      });
+    }
+
     const candidateScriptPaths = [
       path.resolve(process.cwd(), 'apps/api/scripts/faceswap.py'),
       path.resolve(process.cwd(), 'scripts/faceswap.py'),
@@ -831,24 +899,31 @@ export async function executeLocalNeuralFaceSwap(
       console.error(`[FaceSwap py err] ${str.trim()}`);
     });
 
-    py.on('close', (code) => {
+    py.on('close', (code, signal) => {
       if (code === 0 && fs.existsSync(outputImagePath)) {
         console.log('[FaceSwap] Face swap executed successfully!');
         resolve({ success: true });
       } else {
-        console.warn(`[FaceSwap] Process exited with code ${code}`);
+        console.warn(`[FaceSwap] Process exited with code ${code}, signal: ${signal}`);
         let friendlyErr = '';
         let isEnvErr = false;
-        if (stderrOutput.includes('ModuleNotFoundError') || stderrOutput.includes('No module named')) {
-          friendlyErr = 'Server AI neural dependencies (Python / NumPy / InsightFace) are currently initializing on the cloud container. Please retry in a few moments or switch to Gemini AI mode.';
+        if (
+          stderrOutput.includes('ModuleNotFoundError') ||
+          stderrOutput.includes('No module named') ||
+          stderrOutput.includes('Incompatible or low-memory container') ||
+          stderrOutput.includes('insufficient') ||
+          stderrOutput.includes('Inswapper ONNX model') ||
+          stderrOutput.includes('Could not download inswapper_128.onnx') ||
+          code === 137 ||
+          code === 2 ||
+          signal === 'SIGKILL'
+        ) {
+          friendlyErr = 'Server AI neural dependencies are optimizing for this cloud container. Auto-switching to Cloud AI.';
           isEnvErr = true;
         } else if (stderrOutput.includes('Couple transformation requires at least 2')) {
           friendlyErr = 'Couple transformation requires a photograph with two clearly visible faces. Only 1 face was detected.';
         } else if (stderrOutput.includes('No faces detected in uploaded photo')) {
           friendlyErr = 'No face was detected in the uploaded photograph. Please upload a clear photo with a visible face.';
-        } else if (stderrOutput.includes('Inswapper ONNX model not found') || stderrOutput.includes('Could not download inswapper_128.onnx')) {
-          friendlyErr = 'Local ONNX face swap model is initializing on the server.';
-          isEnvErr = true;
         }
         resolve({ success: false, errorMessage: friendlyErr || undefined, isEnvironmentError: isEnvErr });
       }

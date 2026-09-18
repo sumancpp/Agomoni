@@ -87,10 +87,29 @@ def refine_face_blend(target_img, swapped_img, target_face):
         print(f"[FaceSwap] Blend refinement warning: {blend_err}", file=sys.stderr)
         return swapped_img
 
+def is_container_memory_safe() -> bool:
+    """Returns False if memory is too constrained (< 1GB RAM, e.g. Render 512MB tier) to safely run 550MB ONNX model."""
+    if os.environ.get('RENDER') == 'true':
+        return False
+    try:
+        if hasattr(os, 'sysconf') and 'SC_PHYS_PAGES' in os.sysconf_names and 'SC_PAGE_SIZE' in os.sysconf_names:
+            pages = os.sysconf('SC_PHYS_PAGES')
+            page_size = os.sysconf('SC_PAGE_SIZE')
+            total_mb = (pages * page_size) / (1024 * 1024)
+            if total_mb < 900:
+                return False
+    except Exception:
+        pass
+    return True
+
 def swap_faces(source_path: str, target_path: str, output_path: str, mode: str = 'single') -> bool:
     print(f"[FaceSwap] Source: {source_path}")
     print(f"[FaceSwap] Target Template: {target_path}")
     print(f"[FaceSwap] Mode: {mode}")
+
+    if not is_container_memory_safe():
+        print("[FaceSwap ERROR] Incompatible or low-memory container environment (< 1GB RAM on Render/cloud). Inswapper ONNX model cannot run locally without OOM. Auto-falling back to Cloud AI.", file=sys.stderr)
+        return False
 
     try:
         import cv2

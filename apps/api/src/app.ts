@@ -55,40 +55,44 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
-// CORS
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
+// CORS Configuration
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
 
-      const allowedOrigins = [
-        config.CLIENT_URL,
-        'http://localhost:5173',
-        'http://localhost:4000',
-        'http://localhost:3000',
-      ].filter(Boolean);
+    const allowedOrigins = [
+      config.CLIENT_URL,
+      'http://localhost:5173',
+      'http://localhost:4000',
+      'http://localhost:3000',
+    ].filter(Boolean);
 
-      // Always allow configured CLIENT_URL and localhost
-      if (allowedOrigins.some((o) => origin === o || origin.startsWith(o as string))) {
-        return callback(null, true);
-      }
+    // Always allow configured CLIENT_URL and localhost
+    if (allowedOrigins.some((o) => origin === o || (typeof o === 'string' && origin.startsWith(o)))) {
+      return callback(null, true);
+    }
 
-      // Allow all Vercel preview and production deployments
-      if (origin.endsWith('.vercel.app')) {
-        return callback(null, true);
-      }
+    // Allow all Vercel preview and production deployments (including agomoni-web.vercel.app)
+    if (origin.endsWith('.vercel.app') || origin === 'https://agomoni-web.vercel.app') {
+      return callback(null, true);
+    }
 
-      // In development, allow everything
-      if (process.env.NODE_ENV !== 'production') {
-        return callback(null, true);
-      }
+    // In development, allow everything
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
 
-      return callback(new Error('Blocked by CORS policy'));
-    },
-    credentials: true,
-  })
-);
+    return callback(new Error(`Blocked by CORS policy: Origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-session-id', 'Accept'],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Body Parsing
 app.use(express.json({ limit: '10mb' }));
@@ -240,6 +244,14 @@ app.get('/api/v1/stats/live-users', (req, res) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'Agomoni API', timestamp: new Date() });
+});
+
+// 404 Not Found Handler for Unmatched API routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API route not found: ${req.method} ${req.originalUrl}`,
+  });
 });
 
 // Error handling
