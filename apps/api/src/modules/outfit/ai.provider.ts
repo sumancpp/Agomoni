@@ -20,7 +20,7 @@ export interface OutfitGenerationInput {
   pujaDay: string;
   prompt?: string;
   aiMode?: 'auto' | 'vton' | 'photomaker' | 'instantid' | 'faceswap';
-  generationMode?: 'LOCAL_FREE' | 'OPENAI_HD';
+  generationMode?: 'LOCAL_FREE' | 'OPENAI_HD' | 'GEMINI_CLOUD';
 }
 
 export interface OutfitGenerationResult {
@@ -637,6 +637,93 @@ export class OpenAIProvider implements IAIProvider {
 }
 
 /**
+ * OPTIONAL GEMINI CLOUD PROVIDER:
+ * Uses Google's Gemini models with GEMINI_API_KEY.
+ */
+export class GeminiProvider implements IAIProvider {
+  async generateOutfit(input: OutfitGenerationInput): Promise<OutfitGenerationResult> {
+    console.log(`\n========================================`);
+    console.log(`[Agomoni AI] GEMINI CLOUD OUTFIT GENERATION`);
+    console.log(`[Agomoni AI] User: ${input.userId}, Subject: ${input.gender}, Day: ${input.pujaDay}, Style: ${input.style}`);
+    console.log(`========================================\n`);
+
+    const sourceLocalPath = await ensureLocalImage(input.inputImageUrl);
+    if (!sourceLocalPath || !fs.existsSync(sourceLocalPath)) {
+      const err = new Error('Unable to read uploaded photograph. Please re-upload your photo.');
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const geminiKey = config.GEMINI_API_KEY || config.GEMINI_API_KEY_2 || process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      const err = new Error('Gemini API key is not configured in the environment. Please use the default Free Local mode.');
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const geminiImage = await transformWithGemini(sourceLocalPath, input, geminiKey);
+    if (!geminiImage) {
+      const err = new Error('Gemini model generation failed or has no quota. Please switch to the default Free Local mode.');
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
+    const stylingInfo = getStylingInfo(input.gender, input.pujaDay);
+
+    return {
+      resultImageUrl: geminiImage,
+      ...stylingInfo,
+      provider: 'GEMINI_CLOUD',
+      mode: 'Gemini Cloud Transformation',
+    };
+  }
+}
+
+export async function transformWithGemini(
+  sourceLocalPath: string,
+  options: OutfitGenerationInput,
+  apiKey: string
+): Promise<string | null> {
+  try {
+    const promptText = buildMasterOpenAIPrompt(options);
+    const sourceBuffer = fs.readFileSync(sourceLocalPath);
+    const sourceBase64 = sourceBuffer.toString('base64');
+    const mimeType = sourceLocalPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: promptText },
+            { inlineData: { mimeType, data: sourceBase64 } }
+          ]
+        }]
+      })
+    });
+
+    const data = (await res.json()) as any;
+    if (data.candidates && data.candidates[0]?.content?.parts) {
+      for (const part of data.candidates[0].content.parts) {
+        if (part.inlineData?.data) {
+          const targetDir = path.resolve(config.UPLOAD_DIR);
+          const outFilename = `agomoni-gemini-${Date.now()}-${Math.floor(Math.random() * 10000)}.jpg`;
+          const outPath = path.resolve(targetDir, outFilename);
+          fs.writeFileSync(outPath, Buffer.from(part.inlineData.data, 'base64'));
+          return `/uploads/${outFilename}`;
+        }
+      }
+    }
+    console.warn('[Gemini Provider] Response:', JSON.stringify(data).slice(0, 300));
+    return null;
+  } catch (err) {
+    console.warn('[Gemini Provider] Error:', err);
+    return null;
+  }
+}
+
+/**
  * Backward compatibility wrapper
  */
 export class OpenAIFirstOutfitProvider implements IAIProvider {
@@ -805,9 +892,13 @@ export async function generateOpenAIImage(prompt: string): Promise<string | null
 /**
  * Factory to pick the appropriate AI provider.
  * FREE LOCAL is DEFAULT (₹0 API cost, authentic photographic template + local ONNX Inswapper).
+ * GEMINI_CLOUD uses Google Gemini model with GEMINI_API_KEY.
  * OPENAI_HD is OPTIONAL PREMIUM (requires OpenAI image editing credits).
  */
-export function getAIProvider(generationMode: 'LOCAL_FREE' | 'OPENAI_HD' = 'LOCAL_FREE'): IAIProvider {
+export function getAIProvider(generationMode: 'LOCAL_FREE' | 'OPENAI_HD' | 'GEMINI_CLOUD' = 'LOCAL_FREE'): IAIProvider {
+  if (generationMode === 'GEMINI_CLOUD') {
+    return new GeminiProvider();
+  }
   if (generationMode === 'OPENAI_HD') {
     return new OpenAIProvider();
   }

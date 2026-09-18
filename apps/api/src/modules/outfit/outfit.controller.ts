@@ -22,7 +22,7 @@ const generateSchema = z.object({
   pujaDay: z.enum(['Shashti', 'Saptami', 'Ashtami', 'Nabami', 'Dashami']),
   prompt: z.string().max(500).optional(),
   aiMode: z.enum(['auto', 'vton', 'photomaker', 'instantid', 'faceswap']).optional(),
-  generationMode: z.enum(['LOCAL_FREE', 'OPENAI_HD']).default('LOCAL_FREE').optional(),
+  generationMode: z.enum(['LOCAL_FREE', 'OPENAI_HD', 'GEMINI_CLOUD']).default('LOCAL_FREE').optional(),
 });
 
 // Helper: Check free generation limits server-side

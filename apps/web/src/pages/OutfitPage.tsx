@@ -16,7 +16,7 @@ export const OutfitPage: React.FC = () => {
   const [pujaDay, setPujaDay] = useState('Ashtami');
   const [inputImageUrl, setInputImageUrl] = useState('');
   const [aiMode, setAiMode] = useState<'auto' | 'vton' | 'photomaker' | 'instantid' | 'faceswap'>('auto');
-  const [generationMode, setGenerationMode] = useState<'LOCAL_FREE' | 'OPENAI_HD'>('LOCAL_FREE');
+  const [generationMode, setGenerationMode] = useState<'LOCAL_FREE' | 'GEMINI_CLOUD' | 'OPENAI_HD'>('LOCAL_FREE');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -420,7 +420,7 @@ export const OutfitPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                 {/* Free Local Mode */}
                 <button
                   type="button"
@@ -441,12 +441,41 @@ export const OutfitPage: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[11px] text-gold-300/90 font-medium">
-                    Runs locally — no API credits required
+                    Runs locally — ₹0 API credits
                   </p>
                   <p className="text-[10px] text-cream-400 mt-1 leading-snug">
                     {lang === 'bn'
-                      ? 'খাঁটি পুজো ফটো টেমপ্লেট + লোকাল ফেস সোয়াপ'
-                      : 'Authentic Bengali photo template + local face preserve'}
+                      ? 'খাঁটি ফটো টেমপ্লেট + লোকাল ফেস সোয়াপ'
+                      : 'Authentic photo template + local ONNX swap'}
+                  </p>
+                </button>
+
+                {/* Gemini Model Mode */}
+                <button
+                  type="button"
+                  onClick={() => setGenerationMode('GEMINI_CLOUD')}
+                  className={`p-3 rounded-2xl border text-left transition-all relative ${
+                    generationMode === 'GEMINI_CLOUD'
+                      ? 'bg-blue-950/30 border-blue-400 text-blue-200 shadow-md ring-1 ring-blue-400/40'
+                      : 'bg-night-850 border-gold-500/20 text-cream-300 hover:border-gold-500/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between font-bold text-cream-100 mb-1">
+                    <span className="flex items-center gap-1">
+                      <span>💎</span>
+                      <span>Gemini AI</span>
+                    </span>
+                    <span className="text-[9px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30 font-mono">
+                      CLOUD
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-blue-300/90 font-medium">
+                    Google Gemini Model
+                  </p>
+                  <p className="text-[10px] text-cream-400 mt-1 leading-snug">
+                    {lang === 'bn'
+                      ? 'Gemini API Key দিয়ে ক্লাউড ট্রান্সফরমেশন'
+                      : 'Uses Gemini API key & model'}
                   </p>
                 </button>
 
@@ -470,12 +499,12 @@ export const OutfitPage: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[11px] text-purple-300/90 font-medium">
-                    Uses OpenAI image generation credits
+                    OpenAI Image Model
                   </p>
                   <p className="text-[10px] text-cream-400 mt-1 leading-snug">
                     {lang === 'bn'
-                      ? 'OpenAI ইমেজ এডিটিং মডেল'
-                      : 'Direct OpenAI neural image edit'}
+                      ? 'OpenAI ইমেজ জেনারেশন ক্রেডিট প্রয়োজন'
+                      : 'Requires OpenAI API credits'}
                   </p>
                 </button>
               </div>

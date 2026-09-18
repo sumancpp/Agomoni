@@ -6,8 +6,8 @@ import numpy as np
 def refine_face_blend(target_img, swapped_img, target_face):
     """
     Applies Reinhard color space exposure/white-balance matching and
-    feathered elliptical boundary blending to seamlessly merge the swapped
-    face into the authentic Bengali Durga Puja template.
+    keypoint-centered feathered boundary blending to seamlessly merge
+    the swapped face into the authentic Bengali Durga Puja template without seams.
     """
     try:
         import cv2
@@ -21,14 +21,14 @@ def refine_face_blend(target_img, swapped_img, target_face):
         if (x2 - x1) < 20 or (y2 - y1) < 20:
             return swapped_img
 
-        tgt_roi = target_img[y1:y2, x1:x2]
-        res_roi = swapped_img[y1:y2, x1:x2]
+        tgt_roi = target_img[y1:y2, x1:x2].copy()
+        res_roi = swapped_img[y1:y2, x1:x2].copy()
 
         tgt_lab = cv2.cvtColor(tgt_roi, cv2.COLOR_BGR2LAB).astype(np.float32)
         res_lab = cv2.cvtColor(res_roi, cv2.COLOR_BGR2LAB).astype(np.float32)
 
         # 1. Match white balance & chromatic tone (A, B channels in LAB space)
-        alpha_color = 0.55
+        alpha_color = 0.50
         for c in [1, 2]:
             m_tgt, s_tgt = tgt_lab[:, :, c].mean(), tgt_lab[:, :, c].std()
             m_res, s_res = res_lab[:, :, c].mean(), res_lab[:, :, c].std()
@@ -37,7 +37,7 @@ def refine_face_blend(target_img, swapped_img, target_face):
                 res_lab[:, :, c] = (1 - alpha_color) * res_lab[:, :, c] + alpha_color * matched
 
         # 2. Match exposure / lightness (L channel) - subtle to retain user natural depth
-        alpha_light = 0.30
+        alpha_light = 0.25
         m_tgt_l, s_tgt_l = tgt_lab[:, :, 0].mean(), tgt_lab[:, :, 0].std()
         m_res_l, s_res_l = res_lab[:, :, 0].mean(), res_lab[:, :, 0].std()
         if s_res_l > 1e-4:
@@ -47,16 +47,32 @@ def refine_face_blend(target_img, swapped_img, target_face):
         res_lab = np.clip(res_lab, 0, 255).astype(np.uint8)
         color_matched = cv2.cvtColor(res_lab, cv2.COLOR_LAB2BGR)
 
-        # 3. Seamless feathered boundary blending
+        # 3. Seamless feathered boundary blending using target face keypoints if available
         mask = np.zeros((y2 - y1, x2 - x1), dtype=np.float32)
-        center = ((x2 - x1) // 2, (y2 - y1) // 2)
-        axes = (int((x2 - x1) * 0.44), int((y2 - y1) * 0.48))
-        cv2.ellipse(mask, center, axes, 0, 0, 360, 1.0, -1)
-        ksize = int(max(7, min(35, (x2 - x1) // 6) | 1))
+        roi_w = x2 - x1
+        roi_h = y2 - y1
+
+        if hasattr(target_face, 'kps') and target_face.kps is not None and len(target_face.kps) == 5:
+            # 5 keypoints: left_eye, right_eye, nose, left_mouth, right_mouth
+            kps = target_face.kps
+            center_x = int(np.mean(kps[:, 0]) - x1)
+            center_y = int(np.mean(kps[:, 1]) - y1)
+            eye_dist = np.linalg.norm(kps[0] - kps[1])
+            axis_x = int(max(eye_dist * 1.05, roi_w * 0.38))
+            axis_y = int(max(eye_dist * 1.35, roi_h * 0.42))
+        else:
+            center_x = roi_w // 2
+            center_y = roi_h // 2
+            axis_x = int(roi_w * 0.40)
+            axis_y = int(roi_h * 0.45)
+
+        cv2.ellipse(mask, (center_x, center_y), (axis_x, axis_y), 0, 0, 360, 1.0, -1)
+        ksize = int(max(15, min(51, roi_w // 4) | 1))
         mask = cv2.GaussianBlur(mask, (ksize, ksize), 0)
         mask = mask[:, :, np.newaxis]
 
-        final_roi = (color_matched * mask + res_roi * (1.0 - mask)).astype(np.uint8)
+        # Blend color-matched swapped face with authentic template background at boundaries
+        final_roi = (color_matched * mask + tgt_roi * (1.0 - mask)).astype(np.uint8)
         swapped_img[y1:y2, x1:x2] = final_roi
         return swapped_img
     except Exception as blend_err:
@@ -135,15 +151,25 @@ def swap_faces(source_path: str, target_path: str, output_path: str, mode: str =
                 print(f"[FaceSwap ERROR] Couple transformation requires at least 2 detected faces in the source image (found {len(source_faces)}).", file=sys.stderr)
                 return False
 
-            # Sort source and target faces from left to right
-            src_couple = sorted(
+            # Get top 2 primary faces from source and template
+            src_top2 = sorted(
                 sorted(source_faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]), reverse=True)[:2],
                 key=lambda f: f.bbox[0]
             )
-            tgt_couple = sorted(tgt_sorted_by_area[:2], key=lambda f: f.bbox[0])
+            tgt_top2 = sorted(tgt_sorted_by_area[:2], key=lambda f: f.bbox[0])
 
-            print(f"[FaceSwap] Swapping Couple: 2 source faces -> 2 template faces (left-to-right alignment)")
-            for s_f, t_f in zip(src_couple, tgt_couple):
+            # In authentic couple template: Left person is MALE (Kurta), Right person is FEMALE (Saree)
+            src_males = [f for f in src_top2 if getattr(f, 'gender', -1) == 1]
+            src_females = [f for f in src_top2 if getattr(f, 'gender', -1) == 0]
+
+            if len(src_males) == 1 and len(src_females) == 1:
+                print("[FaceSwap] Swapping Couple: Semantic Gender Match (Male -> Kurta, Female -> Saree)")
+                mapping = [(src_males[0], tgt_top2[0]), (src_females[0], tgt_top2[1])]
+            else:
+                print("[FaceSwap] Swapping Couple: Spatial Alignment (Left -> Left, Right -> Right)")
+                mapping = [(src_top2[0], tgt_top2[0]), (src_top2[1], tgt_top2[1])]
+
+            for s_f, t_f in mapping:
                 res = swapper.get(res, t_f, s_f, paste_back=True)
                 res = refine_face_blend(target_img, res, t_f)
         else:
