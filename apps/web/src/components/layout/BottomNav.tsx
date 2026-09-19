@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, Search, BookHeart, User } from 'lucide-react';
+import { Home, Music, Heart, Search, User } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const BottomNav: React.FC = () => {
@@ -9,14 +9,14 @@ export const BottomNav: React.FC = () => {
 
   const navItems = [
     { to: '/', label: t.nav.home, icon: Home },
+    { to: '/songs', label: t.nav.songs, icon: Music },
     { to: '/puja-date', label: t.nav.pujaDate, icon: Heart },
     { to: '/lost-found', label: t.nav.lostFound, icon: Search },
-    { to: '/memories', label: t.nav.memories, icon: BookHeart },
     { to: '/profile', label: t.nav.profile, icon: User },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-[#180C0C]/95 backdrop-blur-2xl border-t border-gold-500/25 shadow-2xl safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-[#160A0A] border-t border-gold-500/25 shadow-2xl safe-area-pb">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
@@ -48,7 +48,7 @@ export const BottomNav: React.FC = () => {
                   <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-400" />
                 )}
               </div>
-              <span className="text-[10px] tracking-tight mt-1 truncate max-w-[60px]">
+              <span className="text-[10px] tracking-tight mt-1 truncate max-w-[68px]">
                 {item.label}
               </span>
             </Link>

@@ -50,7 +50,7 @@ export const MiniMusicPlayer: React.FC = () => {
     >
       {/* Floating Quick Playlist Popover Drawer */}
       {isPlaylistOpen && (
-        <div className="mb-2 bg-[#180C0C]/98 backdrop-blur-2xl border border-gold-500/40 rounded-2xl p-3 sm:p-4 shadow-[0_16px_48px_rgba(0,0,0,0.9)] space-y-3 animate-fade-in border-b-0 max-h-80 flex flex-col">
+        <div className="mb-2 bg-[#180C0C] backdrop-blur-2xl border border-gold-500/40 rounded-2xl p-3 sm:p-4 shadow-[0_16px_48px_rgba(0,0,0,0.9)] space-y-3 animate-fade-in border-b-0 max-h-80 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gold-500/20 pb-2.5 flex-shrink-0">
             <div className="flex items-center gap-2">

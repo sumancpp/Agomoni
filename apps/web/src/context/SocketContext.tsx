@@ -142,7 +142,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             }
             dismissToast();
           }}
-          className="fixed top-20 right-4 sm:right-6 z-50 max-w-sm w-[calc(100vw-32px)] bg-[#171114]/98 border-2 border-gold-500/80 rounded-2xl p-4 shadow-[0_15px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl cursor-pointer animate-bounce-in transition-all hover:scale-[1.02]"
+          className="fixed top-20 right-4 sm:right-6 z-50 max-w-sm w-[calc(100vw-32px)] bg-[#171114] border-2 border-gold-500/80 rounded-2xl p-4 shadow-[0_15px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl cursor-pointer animate-bounce-in transition-all hover:scale-[1.02]"
         >
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-full bg-sindoor-600/30 border border-gold-500/40 flex items-center justify-center text-lg shrink-0">

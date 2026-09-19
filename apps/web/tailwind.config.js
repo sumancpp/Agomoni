@@ -92,6 +92,9 @@ export default {
           '50%': { opacity: '1' },
         },
       },
+      opacity: {
+        '98': '0.98',
+      },
     },
   },
   plugins: [],

@@ -172,9 +172,9 @@ export const Navbar: React.FC = () => {
   return (
     <header
       className={`sticky top-0 z-40 transition-all duration-300 ease-in-out border-b border-gold-500/25 shadow-xl shadow-black/60 ${
-        isScrolled
-          ? 'bg-[#120909]/98 backdrop-blur-2xl py-0'
-          : 'bg-[#120909]/85 backdrop-blur-xl py-0.5'
+        isMobileMenuOpen || isScrolled
+          ? 'bg-[#120909] py-0'
+          : 'bg-[#120909]/95 backdrop-blur-xl py-0.5'
       } ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
     >
       <div className={`max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 transition-all duration-300 ${
@@ -382,13 +382,13 @@ export const Navbar: React.FC = () => {
       {isMobileMenuOpen && (
         <div
           onClick={() => setIsMobileMenuOpen(false)}
-          className="md:hidden fixed inset-0 top-16 bg-[#120909]/85 backdrop-blur-md z-40"
+          className={`md:hidden fixed inset-0 ${isScrolled ? 'top-14' : 'top-16'} bg-black/80 backdrop-blur-sm z-40`}
         />
       )}
 
       {/* Mobile Full-Featured Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 bg-[#180C0C]/98 border-b-2 border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.98)] z-50 max-h-[calc(100vh-4rem)] overflow-y-auto animate-fade-in">
+        <div className={`md:hidden fixed inset-x-0 ${isScrolled ? 'top-14' : 'top-16'} bg-[#160A0A] border-b-2 border-gold-500/40 shadow-[0_25px_60px_rgba(0,0,0,0.98)] z-50 max-h-[calc(100vh-4rem)] overflow-y-auto animate-fade-in`}>
           <div className="p-4 sm:p-6 space-y-4">
             {/* Quick Puja Date Banner inside Mobile Menu */}
             <Link
@@ -427,7 +427,7 @@ export const Navbar: React.FC = () => {
                     className={`p-3 rounded-2xl border text-sm font-semibold transition-all flex items-center gap-2.5 ${
                       isActive
                         ? 'bg-gradient-to-r from-[#4A1010] to-[#2A0B0B] border-gold-400 text-gold-300 font-bold shadow-lg shadow-black/50'
-                        : 'bg-[#240F0F]/80 hover:bg-[#331414] border-gold-500/20 text-cream-100 hover:text-white hover:border-gold-500/40 shadow-sm'
+                        : 'bg-[#240F0F] hover:bg-[#331414] border-gold-500/20 text-cream-100 hover:text-white hover:border-gold-500/40 shadow-sm'
                     }`}
                   >
                     <Icon size={17} className={isActive ? 'text-gold-400' : 'text-gold-500/80'} />
@@ -454,7 +454,7 @@ export const Navbar: React.FC = () => {
 
             {/* Language Switcher & Notifications inside Mobile Drawer */}
             <div className="pt-2 flex flex-col gap-2.5">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#240F0F]/90 border border-gold-500/20 text-cream-100 shadow-sm">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[#240F0F] border border-gold-500/20 text-cream-100 shadow-sm">
                 <div className="flex items-center gap-2 text-xs font-semibold text-cream-200">
                   <Globe size={15} className="text-gold-400" />
                   <span>{lang === 'bn' ? 'ভাষা নির্বাচন' : 'Language'}</span>
@@ -473,7 +473,7 @@ export const Navbar: React.FC = () => {
                     setIsMobileMenuOpen(false);
                     setIsNotifOpen(true);
                   }}
-                  className="p-3 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-between cursor-pointer hover:bg-gold-500/20 transition-all shadow-sm"
+                  className="p-3 rounded-2xl bg-[#240F0F] border border-gold-500/30 flex items-center justify-between cursor-pointer hover:bg-[#331414] transition-all shadow-sm"
                 >
                   <div className="flex items-center gap-2 text-xs font-semibold text-cream-100">
                     <Bell size={15} className="text-gold-400" />

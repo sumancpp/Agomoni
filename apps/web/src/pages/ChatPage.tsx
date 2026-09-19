@@ -409,7 +409,7 @@ export const ChatPage: React.FC = () => {
   return (
     <div className="w-full max-w-7xl mx-auto p-0 sm:p-2 md:p-3 h-full min-h-0 flex flex-col flex-1">
       {/* WhatsApp Web Style Main Shell: Locked Height, Zero Outer Scroll */}
-      <div className="puja-card flex-1 min-h-0 h-full rounded-none sm:rounded-3xl overflow-hidden flex flex-col md:flex-row border-0 sm:border border-gold-500/30 shadow-2xl bg-[#120909]/98 relative">
+      <div className="puja-card flex-1 min-h-0 h-full rounded-none sm:rounded-3xl overflow-hidden flex flex-col md:flex-row border-0 sm:border border-gold-500/30 shadow-2xl bg-[#120909] relative">
         
         {/* ========================================================================= */}
         {/* LEFT PANE: Conversations Sidebar (WhatsApp Style, Scrollable) */}
@@ -729,7 +729,7 @@ export const ChatPage: React.FC = () => {
 
               {/* Floating Emoji Picker Popover */}
               {showEmojiPicker && (
-                <div className="p-3 bg-[#180C0C]/98 backdrop-blur-2xl border border-gold-500/40 rounded-2xl shadow-2xl mx-3 mb-1 animate-scale-up z-30 flex-shrink-0">
+                <div className="p-3 bg-[#180C0C] backdrop-blur-2xl border border-gold-500/40 rounded-2xl shadow-2xl mx-3 mb-1 animate-scale-up z-30 flex-shrink-0">
                   <div className="flex items-center justify-between border-b border-gold-500/20 pb-2 mb-2">
                     <div className="flex items-center gap-1.5 font-bengali">
                       <button
