@@ -167,9 +167,14 @@
       <h1>পুজোর পথটা একটু থেমে গেছে...</h1>
       <p class="bn">ইন্টারনেট সংযোগ ফিরে এলে আবার চেষ্টা করুন। মা দুর্গার কৃপায় আগমনী সবসময় আপনার সঙ্গেই থাকবে।</p>
       <p class="en">You appear to be offline. AGOMONI will reconnect automatically once network is restored.</p>
-      <button class="retry-btn" onclick="retryConnection()">
-        <span>পুনরায় চেষ্টা করুন</span> • <span>Try Again</span>
-      </button>
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 6px;">
+        <button class="retry-btn" onclick="retryConnection()">
+          <span>পুনরায় চেষ্টা করুন</span> • <span>Try Again</span>
+        </button>
+        <a href="/" style="display: inline-block; margin-top: 6px; font-size: 13px; color: #E7C766; text-decoration: none; border-bottom: 1px dashed rgba(212, 175, 55, 0.4); padding-bottom: 2px;">
+          মূল পাতায় ফিরে যান • Return to Home
+        </a>
+      </div>
       <div>
         <div class="status-pill">
           <span class="dot" id="statusDot"></span>
@@ -179,9 +184,23 @@
     </div>
 
     <script>
+      function updateAndReload() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function(r) { return r.update(); }));
+          }).then(function() {
+            window.location.reload();
+          }).catch(function() {
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+      }
+
       function retryConnection() {
         if (navigator.onLine) {
-          window.location.reload();
+          updateAndReload();
         } else {
           const btn = document.querySelector('.retry-btn');
           btn.style.opacity = '0.7';
@@ -189,9 +208,16 @@
           setTimeout(() => {
             btn.style.opacity = '1';
             btn.innerHTML = '<span>পুনরায় চেষ্টা করুন</span> • <span>Try Again</span>';
-            if (navigator.onLine) window.location.reload();
+            if (navigator.onLine) updateAndReload();
           }, 1200);
         }
+      }
+
+      // If online already, attempt to update service worker in the background
+      if (navigator.onLine && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.update(); });
+        });
       }
 
       window.addEventListener('online', () => {
@@ -200,7 +226,7 @@
         if (dot) dot.style.backgroundColor = '#10B981';
         if (text) text.innerText = 'অনলাইন সংযোগ ফিরেছে! লোড হচ্ছে...';
         setTimeout(() => {
-          window.location.reload();
+          updateAndReload();
         }, 800);
       });
     </script>

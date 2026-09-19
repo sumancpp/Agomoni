@@ -24,7 +24,7 @@ import FestiveButton from '../components/common/FestiveButton';
 import { apiFetch, resolveImageUrl } from '../lib/api';
 
 export const AdminPage: React.FC = () => {
-  const { token, user } = useAuth();
+  const { token, user, isLoading: isAuthLoading } = useAuth();
 
   const [analytics, setAnalytics] = useState<any>(null);
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -166,6 +166,15 @@ export const AdminPage: React.FC = () => {
       alert('Error updating report');
     }
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 space-y-3">
+        <div className="animate-spin rounded-full h-9 w-9 border-t-2 border-b-2 border-gold-400"></div>
+        <p className="text-xs text-cream-300 font-serif">Verifying admin credentials...</p>
+      </div>
+    );
+  }
 
   if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') {
     return (

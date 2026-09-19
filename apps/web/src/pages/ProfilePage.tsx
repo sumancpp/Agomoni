@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, Shield, Lock, Trash2, LogOut, Check, Save, MapPin, Camera, Upload, Loader2 } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { User, Shield, ShieldCheck, Lock, Trash2, LogOut, Check, Save, MapPin, Camera, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
@@ -237,6 +237,34 @@ export const ProfilePage: React.FC = () => {
           <span>{t.nav.logout}</span>
         </FestiveButton>
       </div>
+
+      {/* Administrator Portal Access */}
+      {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+        <div className="puja-card p-4 sm:p-5 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-[#2B1909]/70 via-[#3D1E0C]/60 to-[#2B1909]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/35 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <ShieldCheck size={22} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-cream-100 font-cinzel flex items-center gap-2">
+                <span>Administrator Console</span>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {user.role}
+                </span>
+              </h4>
+              <p className="text-xs text-cream-300/80">
+                Manage system users, view analytics, process payments & moderation
+              </p>
+            </div>
+          </div>
+          <Link to="/admin" className="self-start sm:self-auto flex-shrink-0">
+            <FestiveButton variant="gold" size="sm" className="gap-1.5 font-bold shadow-md">
+              <ShieldCheck size={14} className="text-night-950" />
+              <span>Open Admin Panel</span>
+            </FestiveButton>
+          </Link>
+        </div>
+      )}
 
       {/* Active Entitlements Banner */}
       <div className="puja-card p-4 rounded-2xl space-y-2">
