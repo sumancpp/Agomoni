@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, Globe, User, Menu, X, ShieldAlert, ShieldCheck, Music, Bell, CheckCheck, Sparkles, Home, Search, BookHeart, LogIn } from 'lucide-react';
+import { Heart, Globe, User, Menu, X, ShieldAlert, Music, Bell, CheckCheck, Sparkles, Home, Search, BookHeart, LogIn } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import FestiveButton from '../common/FestiveButton';
-import { PwaInstallButton } from '../pwa/PwaInstallButton';
 import { apiFetch, resolveImageUrl } from '../../lib/api';
 
 interface NotificationItem {
@@ -220,18 +219,6 @@ export const Navbar: React.FC = () => {
               </Link>
             );
           })}
-          {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
-            <Link
-              to="/admin"
-              className={`text-xs lg:text-sm font-semibold transition-all flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-amber-500/15 border border-amber-500/35 text-amber-300 hover:text-amber-200 hover:bg-amber-500/25 ${
-                location.pathname === '/admin' ? 'border-amber-400 bg-amber-500/30 text-gold-300 shadow-sm' : ''
-              }`}
-              title="Admin Portal"
-            >
-              <ShieldCheck size={14} className="text-amber-400" />
-              <span>{lang === 'bn' ? 'অ্যাডমিন' : 'Admin'}</span>
-            </Link>
-          )}
         </nav>
 
         {/* Action Controls */}
@@ -259,9 +246,6 @@ export const Navbar: React.FC = () => {
           >
             <ShieldAlert size={16} />
           </Link>
-
-          {/* PWA Install Button (Desktop/Tablet) */}
-          <PwaInstallButton variant="navbar" className="hidden lg:inline-flex" />
 
           {/* Language Switcher (Desktop/Tablet) */}
           <button
@@ -448,23 +432,6 @@ export const Navbar: React.FC = () => {
                 );
               })}
 
-              {/* Admin Portal Quick Item (Mobile) */}
-              {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
-                <Link
-                  to="/admin"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-3 rounded-2xl border border-amber-500/40 bg-[#2B1909] hover:bg-[#3D240E] text-amber-300 text-sm font-semibold flex items-center gap-2.5 shadow-sm col-span-2"
-                >
-                  <ShieldCheck size={18} className="text-amber-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold flex items-center justify-between">
-                      <span>{lang === 'bn' ? 'অ্যাডমিন পোর্টাল' : 'Admin Portal'}</span>
-                      <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-amber-600/30 text-amber-300 border border-amber-500/30">ADMIN</span>
-                    </div>
-                  </div>
-                </Link>
-              )}
-
               {/* Emergency Quick Item */}
               <Link
                 to="/emergency"
@@ -517,11 +484,6 @@ export const Navbar: React.FC = () => {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* PWA Install Button inside Mobile Drawer */}
-            <div className="pt-2">
-              <PwaInstallButton variant="card" />
             </div>
 
             {/* Auth / Account Controls inside Drawer */}
