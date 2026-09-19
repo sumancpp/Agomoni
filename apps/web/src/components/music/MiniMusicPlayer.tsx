@@ -41,7 +41,7 @@ export const MiniMusicPlayer: React.FC = () => {
 
   if (!isMiniPlayerVisible || !activeTrack) return null;
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progressPercent = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
 
   return (
     <div

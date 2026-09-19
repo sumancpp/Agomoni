@@ -172,7 +172,7 @@ export const FullMusicPlayerModal: React.FC = () => {
               className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-gold-400 hover:accent-gold-300 transition-all"
             />
             <div className="flex justify-between text-xs font-mono text-cream-400">
-              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration > 0 ? Math.min(currentTime, duration) : currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
           </div>

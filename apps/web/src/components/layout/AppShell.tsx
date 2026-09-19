@@ -42,17 +42,18 @@ export const AppShell: React.FC = () => {
       {/* Expandable Full Music Player Modal */}
       <FullMusicPlayerModal />
 
-      {/* Persistent Background Audio Service for YouTube Embeds (Only mounts when playing) */}
-      {activeTrack && isPlaying && activeTrack.provider === 'YOUTUBE_EMBED' && activeTrack.embedUrl && (
+      {/* Persistent Background Audio Service for YouTube Embeds (Preserves paused position without unmounting) */}
+      {activeTrack && activeTrack.provider === 'YOUTUBE_EMBED' && activeTrack.embedUrl && (
         <div
           style={{
             position: 'fixed',
-            top: -9999,
-            left: -9999,
-            width: 1,
-            height: 1,
-            opacity: 0,
+            bottom: 0,
+            right: 0,
+            width: 16,
+            height: 16,
+            opacity: 0.001,
             pointerEvents: 'none',
+            zIndex: -999,
             overflow: 'hidden',
           }}
           aria-hidden="true"
@@ -62,8 +63,8 @@ export const AppShell: React.FC = () => {
             key={activeTrack.id}
             src={
               activeTrack.embedUrl.includes('?')
-                ? `${activeTrack.embedUrl}&enablejsapi=1&autoplay=1`
-                : `${activeTrack.embedUrl}?enablejsapi=1&autoplay=1`
+                ? `${activeTrack.embedUrl}&enablejsapi=1&autoplay=1&origin=${encodeURIComponent(window.location.origin)}`
+                : `${activeTrack.embedUrl}?enablejsapi=1&autoplay=1&origin=${encodeURIComponent(window.location.origin)}`
             }
             title={activeTrack.title}
             className="w-full h-full"
@@ -72,7 +73,7 @@ export const AppShell: React.FC = () => {
             onLoad={() => {
               setTimeout(() => {
                 initYouTubeListening();
-              }, 600);
+              }, 400);
             }}
           />
         </div>

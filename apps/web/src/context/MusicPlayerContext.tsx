@@ -91,13 +91,38 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [activeTrack, setActiveTrack] = useState<MusicTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(151);
+  const [duration, setDuration] = useState<number>(150);
   const [volume, setVolumeState] = useState<number>(0.8);
   const [isMiniPlayerVisible, setIsMiniPlayerVisible] = useState<boolean>(false);
   const [isFullPlayerOpen, setIsFullPlayerOpen] = useState<boolean>(false);
   const [playlist, setPlaylist] = useState<MusicTrack[]>(ALL_CURATED_TRACKS as MusicTrack[]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeTrackRef = useRef<MusicTrack | null>(activeTrack);
+  const playlistRef = useRef<MusicTrack[]>(playlist);
+  const currentTimeRef = useRef<number>(currentTime);
+  const durationRef = useRef<number>(duration);
+  const isPlayingRef = useRef<boolean>(isPlaying);
+
+  useEffect(() => {
+    activeTrackRef.current = activeTrack;
+  }, [activeTrack]);
+
+  useEffect(() => {
+    playlistRef.current = playlist;
+  }, [playlist]);
+
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
+  useEffect(() => {
+    durationRef.current = duration;
+  }, [duration]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   // Pre-load and merge all festive tracks on mount so the playlist queue is immediately available
   useEffect(() => {
@@ -129,10 +154,29 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
             return 0;
           });
           setPlaylist(mergedTracks);
+          playlistRef.current = mergedTracks;
         }
       })
       .catch(() => {});
   }, []);
+
+  const handleNextTrack = () => {
+    const currentList = playlistRef.current;
+    const currentTrack = activeTrackRef.current;
+    if (currentList.length === 0 || !currentTrack) return;
+    const currentIndex = currentList.findIndex((t) => t.id === currentTrack.id);
+    const nextIndex = (currentIndex + 1) % currentList.length;
+    playTrack(currentList[nextIndex], currentList);
+  };
+
+  const handlePrevTrack = () => {
+    const currentList = playlistRef.current;
+    const currentTrack = activeTrackRef.current;
+    if (currentList.length === 0 || !currentTrack) return;
+    const currentIndex = currentList.findIndex((t) => t.id === currentTrack.id);
+    const prevIndex = (currentIndex - 1 + currentList.length) % currentList.length;
+    playTrack(currentList[prevIndex], currentList);
+  };
 
   // Synchronize state from YouTube iframe events
   useEffect(() => {
@@ -146,12 +190,15 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           if (typeof data.info.duration === 'number' && data.info.duration > 0) {
             const realDuration = Math.round(data.info.duration);
             setDuration(realDuration);
-            if (activeTrack && (!activeTrack.durationSeconds || activeTrack.durationSeconds !== realDuration)) {
-              activeTrack.durationSeconds = realDuration;
+            durationRef.current = realDuration;
+            if (activeTrackRef.current && (!activeTrackRef.current.durationSeconds || activeTrackRef.current.durationSeconds !== realDuration)) {
+              activeTrackRef.current.durationSeconds = realDuration;
             }
           }
           if (typeof data.info.currentTime === 'number') {
-            setCurrentTime(Math.round(data.info.currentTime));
+            const realSec = Math.floor(data.info.currentTime);
+            setCurrentTime(realSec);
+            currentTimeRef.current = realSec;
           }
         }
 
@@ -167,12 +214,15 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           // 1: playing, 2: paused, 0: ended
           if (state === 1) {
             setIsPlaying(true);
+            isPlayingRef.current = true;
             sendYouTubeCommand('getDuration');
             sendYouTubeCommand('getCurrentTime');
           } else if (state === 2) {
             setIsPlaying(false);
+            isPlayingRef.current = false;
           } else if (state === 0) {
-            nextTrack();
+            // Track naturally completed on YouTube
+            handleNextTrack();
           }
         }
       } catch {
@@ -182,30 +232,34 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [playlist, activeTrack]);
+  }, []);
 
   useEffect(() => {
     const audio = new Audio();
     audio.volume = volume;
 
     audio.ontimeupdate = () => {
-      setCurrentTime(audio.currentTime);
+      const sec = Math.floor(audio.currentTime);
+      setCurrentTime(sec);
+      currentTimeRef.current = sec;
     };
 
     audio.onloadedmetadata = () => {
       if (audio.duration && !isNaN(audio.duration)) {
-        setDuration(Math.round(audio.duration));
+        const dur = Math.round(audio.duration);
+        setDuration(dur);
+        durationRef.current = dur;
       }
     };
 
     audio.onended = () => {
-      nextTrack();
+      handleNextTrack();
     };
 
     audio.onerror = () => {
       if (!audio.currentSrc && !audio.src) return;
-      if (activeTrack && activeTrack.provider === 'ORIGINAL' && activeTrack.sourceUrl) {
-        console.warn('[Agomoni Audio] Source error on track:', activeTrack.title);
+      if (activeTrackRef.current && activeTrackRef.current.provider === 'ORIGINAL' && activeTrackRef.current.sourceUrl) {
+        console.warn('[Agomoni Audio] Source error on track:', activeTrackRef.current.title);
       }
     };
 
@@ -219,7 +273,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       audio.pause();
       audio.removeAttribute('src');
     };
-  }, [activeTrack]);
+  }, [activeTrack?.id]);
 
   // Query YouTube for exact real time & duration every second while playing
   useEffect(() => {
@@ -231,33 +285,47 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       sendYouTubeCommand('getCurrentTime');
       sendYouTubeCommand('getDuration');
 
+      // Progress forward smoothly between YouTube sync events,
+      // but cap at duration so the progress bar never runs past the track end!
       setCurrentTime((prev) => {
-        const trackDuration = duration || activeTrack.durationSeconds || 0;
-        if (trackDuration > 0 && prev >= trackDuration) {
-          nextTrack();
-          return 0;
+        const trackDuration = durationRef.current || activeTrackRef.current?.durationSeconds || 0;
+        const nextTime = prev + 1;
+        // NEVER artificially skip tracks here — track transitions are handled strictly by YouTube's onStateChange (state === 0)
+        if (trackDuration > 0 && nextTime >= trackDuration) {
+          return trackDuration;
         }
-        return prev + 1;
+        return nextTime;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, activeTrack, duration]);
+  }, [isPlaying, activeTrack?.id]);
 
   const playTrack = (track: MusicTrack, playlistContext?: MusicTrack[], openModal: boolean = false) => {
+    // If clicking the track that is already active
+    if (activeTrackRef.current && activeTrackRef.current.id === track.id) {
+      if (!isPlayingRef.current) {
+        togglePlay();
+      }
+      if (openModal) {
+        setIsFullPlayerOpen(true);
+      }
+      return;
+    }
+
     setActiveTrack(track);
+    activeTrackRef.current = track;
     setIsMiniPlayerVisible(true);
     setCurrentTime(0);
+    currentTimeRef.current = 0;
 
-    // Immediately set duration to this specific track's duration if available
-    if (track.durationSeconds && track.durationSeconds > 0) {
-      setDuration(track.durationSeconds);
-    } else {
-      setDuration(0);
-    }
+    const trackDur = track.durationSeconds && track.durationSeconds > 0 ? track.durationSeconds : 180;
+    setDuration(trackDur);
+    durationRef.current = trackDur;
 
     if (playlistContext && playlistContext.length > 0) {
       setPlaylist(playlistContext);
+      playlistRef.current = playlistContext;
     }
 
     if (openModal) {
@@ -270,6 +338,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         audioRef.current.src = '';
       }
       setIsPlaying(true);
+      isPlayingRef.current = true;
       setTimeout(() => {
         sendYouTubeCommand('playVideo');
       }, 400);
@@ -284,20 +353,23 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           .play()
           .then(() => {
             setIsPlaying(true);
+            isPlayingRef.current = true;
           })
           .catch(() => {
-            // Autoplay waiting for user gesture is normal browser behavior
             setIsPlaying(false);
+            isPlayingRef.current = false;
           });
       }
     }
   };
 
   const togglePlay = () => {
-    if (!activeTrack) {
-      if (playlist.length > 0) {
-        const duggaElo = playlist.find((t) => t.title.toLowerCase().includes('dugga elo')) || playlist[0];
-        playTrack(duggaElo, playlist, false);
+    const currentTrack = activeTrackRef.current;
+    if (!currentTrack) {
+      const list = playlistRef.current;
+      if (list.length > 0) {
+        const duggaElo = list.find((t) => t.title.toLowerCase().includes('dugga elo')) || list[0];
+        playTrack(duggaElo, list, false);
       } else {
         playTrack(DEFAULT_DUGGA_ELO_TRACK, [DEFAULT_DUGGA_ELO_TRACK], false);
       }
@@ -305,37 +377,48 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
     setIsMiniPlayerVisible(true);
 
-    if (activeTrack.provider === 'YOUTUBE_EMBED') {
+    if (currentTrack.provider === 'YOUTUBE_EMBED') {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
       }
-      if (isPlaying) {
+      if (isPlayingRef.current) {
         sendYouTubeCommand('pauseVideo');
         setIsPlaying(false);
+        isPlayingRef.current = false;
       } else {
         sendYouTubeCommand('playVideo');
+        if (currentTimeRef.current > 0) {
+          sendYouTubeCommand('seekTo', [currentTimeRef.current, true]);
+        }
         setIsPlaying(true);
+        isPlayingRef.current = true;
       }
       return;
     }
 
-    if (audioRef.current && activeTrack.sourceUrl) {
-      if (isPlaying) {
+    if (audioRef.current && currentTrack.sourceUrl) {
+      if (isPlayingRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
+        isPlayingRef.current = false;
       } else {
-        if (audioRef.current.src !== activeTrack.sourceUrl) {
-          audioRef.current.src = activeTrack.sourceUrl;
+        if (audioRef.current.src !== currentTrack.sourceUrl) {
+          audioRef.current.src = currentTrack.sourceUrl;
+        }
+        if (currentTimeRef.current > 0) {
+          audioRef.current.currentTime = currentTimeRef.current;
         }
         audioRef.current
           .play()
           .then(() => {
             setIsPlaying(true);
+            isPlayingRef.current = true;
           })
           .catch((e) => {
             console.warn('Audio playback error', e);
             setIsPlaying(false);
+            isPlayingRef.current = false;
           });
       }
     }
@@ -347,6 +430,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
     sendYouTubeCommand('pauseVideo');
     setIsPlaying(false);
+    isPlayingRef.current = false;
   };
 
   const stopMusic = () => {
@@ -356,6 +440,11 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
     sendYouTubeCommand('stopVideo');
     setIsPlaying(false);
+    isPlayingRef.current = false;
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+    setActiveTrack(null);
+    activeTrackRef.current = null;
     setIsMiniPlayerVisible(false);
     setIsFullPlayerOpen(false);
   };
@@ -365,24 +454,19 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const nextTrack = () => {
-    if (playlist.length === 0 || !activeTrack) return;
-    const currentIndex = playlist.findIndex((t) => t.id === activeTrack.id);
-    const nextIndex = (currentIndex + 1) % playlist.length;
-    playTrack(playlist[nextIndex]);
+    handleNextTrack();
   };
 
   const prevTrack = () => {
-    if (playlist.length === 0 || !activeTrack) return;
-    const currentIndex = playlist.findIndex((t) => t.id === activeTrack.id);
-    const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-    playTrack(playlist[prevIndex]);
+    handlePrevTrack();
   };
 
   const seek = (seconds: number) => {
     setCurrentTime(seconds);
-    if (audioRef.current && activeTrack?.provider === 'ORIGINAL') {
+    currentTimeRef.current = seconds;
+    if (audioRef.current && activeTrackRef.current?.provider === 'ORIGINAL') {
       audioRef.current.currentTime = seconds;
-    } else if (activeTrack?.provider === 'YOUTUBE_EMBED') {
+    } else if (activeTrackRef.current?.provider === 'YOUTUBE_EMBED') {
       sendYouTubeCommand('seekTo', [seconds, true]);
     }
   };

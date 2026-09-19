@@ -36,7 +36,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/xlElO06nQy8",
         "artworkUrl": "https://img.youtube.com/vi/xlElO06nQy8/hqdefault.jpg",
-        "durationSeconds": 151,
+        "durationSeconds": 150,
         "orderIndex": 1,
         "id": "track-1-1-xlElO06nQy8"
       },
@@ -47,7 +47,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/PiMa4BW9Vrw",
         "artworkUrl": "https://img.youtube.com/vi/PiMa4BW9Vrw/hqdefault.jpg",
-        "durationSeconds": 151,
+        "durationSeconds": 204,
         "orderIndex": 2,
         "id": "track-1-2-PiMa4BW9Vrw"
       },
@@ -58,7 +58,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/xytF80lvSV8",
         "artworkUrl": "https://img.youtube.com/vi/xytF80lvSV8/hqdefault.jpg",
-        "durationSeconds": 151,
+        "durationSeconds": 265,
         "orderIndex": 3,
         "id": "track-1-3-xytF80lvSV8"
       },
@@ -69,7 +69,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/sPuZ0Q3KDWo",
         "artworkUrl": "https://img.youtube.com/vi/sPuZ0Q3KDWo/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 172,
         "orderIndex": 4,
         "id": "track-1-4-sPuZ0Q3KDWo"
       },
@@ -80,7 +80,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/6YCfoWniGvg",
         "artworkUrl": "https://img.youtube.com/vi/6YCfoWniGvg/hqdefault.jpg",
-        "durationSeconds": 151,
+        "durationSeconds": 248,
         "orderIndex": 5,
         "id": "track-1-5-6YCfoWniGvg"
       },
@@ -91,7 +91,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/80OX5xMvJP4",
         "artworkUrl": "https://img.youtube.com/vi/80OX5xMvJP4/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 267,
         "orderIndex": 6,
         "id": "track-1-6-80OX5xMvJP4"
       },
@@ -102,7 +102,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/E2zfQEo7Q_M",
         "artworkUrl": "https://img.youtube.com/vi/E2zfQEo7Q_M/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 224,
         "orderIndex": 7,
         "id": "track-1-7-E2zfQEo7Q_M"
       },
@@ -113,7 +113,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/NAUA2LM9hZc",
         "artworkUrl": "https://img.youtube.com/vi/NAUA2LM9hZc/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 290,
         "orderIndex": 8,
         "id": "track-1-8-NAUA2LM9hZc"
       },
@@ -124,7 +124,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/E_6K3no0PD0",
         "artworkUrl": "https://img.youtube.com/vi/E_6K3no0PD0/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 205,
         "orderIndex": 9,
         "id": "track-1-9-E_6K3no0PD0"
       },
@@ -135,7 +135,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/Ez44dZdXDRk",
         "artworkUrl": "https://img.youtube.com/vi/Ez44dZdXDRk/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 221,
         "orderIndex": 10,
         "id": "track-1-10-Ez44dZdXDRk"
       },
@@ -146,7 +146,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/3E_qefwPA0E",
         "artworkUrl": "https://img.youtube.com/vi/3E_qefwPA0E/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 209,
         "orderIndex": 11,
         "id": "track-1-11-3E_qefwPA0E"
       },
@@ -157,7 +157,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/WSy0-WRc_34",
         "artworkUrl": "https://img.youtube.com/vi/WSy0-WRc_34/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 215,
         "orderIndex": 12,
         "id": "track-1-12-WSy0-WRc_34"
       },
@@ -168,7 +168,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/5f1O74GwWJM",
         "artworkUrl": "https://img.youtube.com/vi/5f1O74GwWJM/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 185,
         "orderIndex": 13,
         "id": "track-1-13-5f1O74GwWJM"
       },
@@ -179,7 +179,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/gQAze-TW23c",
         "artworkUrl": "https://img.youtube.com/vi/gQAze-TW23c/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 207,
         "orderIndex": 14,
         "id": "track-1-14-gQAze-TW23c"
       },
@@ -190,7 +190,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/hmHDqaePFdU",
         "artworkUrl": "https://img.youtube.com/vi/hmHDqaePFdU/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 399,
         "orderIndex": 15,
         "id": "track-1-15-hmHDqaePFdU"
       },
@@ -201,7 +201,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/V-FdetrFMzw",
         "artworkUrl": "https://img.youtube.com/vi/V-FdetrFMzw/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 279,
         "orderIndex": 16,
         "id": "track-1-16-V-FdetrFMzw"
       },
@@ -212,7 +212,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/wF9oo8dJ5t4",
         "artworkUrl": "https://img.youtube.com/vi/wF9oo8dJ5t4/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 243,
         "orderIndex": 17,
         "id": "track-1-17-wF9oo8dJ5t4"
       },
@@ -223,7 +223,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/1kgHdX3E_30",
         "artworkUrl": "https://img.youtube.com/vi/1kgHdX3E_30/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 265,
         "orderIndex": 18,
         "id": "track-1-18-1kgHdX3E_30"
       },
@@ -234,7 +234,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/47BOJY1sheQ",
         "artworkUrl": "https://img.youtube.com/vi/47BOJY1sheQ/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 235,
         "orderIndex": 19,
         "id": "track-1-19-47BOJY1sheQ"
       },
@@ -256,7 +256,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/3QYzocDw-2E",
         "artworkUrl": "https://img.youtube.com/vi/3QYzocDw-2E/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 243,
         "orderIndex": 21,
         "id": "track-1-21-3QYzocDw-2E"
       },
@@ -267,7 +267,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/A_PUnDNxFaE",
         "artworkUrl": "https://img.youtube.com/vi/A_PUnDNxFaE/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 247,
         "orderIndex": 22,
         "id": "track-1-22-A_PUnDNxFaE"
       },
@@ -278,7 +278,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/hjBMTHOj00M",
         "artworkUrl": "https://img.youtube.com/vi/hjBMTHOj00M/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 230,
         "orderIndex": 23,
         "id": "track-1-23-hjBMTHOj00M"
       },
@@ -289,7 +289,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/id5_3dKvEBg",
         "artworkUrl": "https://img.youtube.com/vi/id5_3dKvEBg/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 262,
         "orderIndex": 24,
         "id": "track-1-24-id5_3dKvEBg"
       },
@@ -300,7 +300,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/z4Vc5wHoLiY",
         "artworkUrl": "https://img.youtube.com/vi/z4Vc5wHoLiY/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 291,
         "orderIndex": 25,
         "id": "track-1-25-z4Vc5wHoLiY"
       },
@@ -311,7 +311,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/j87D8QMNe5k",
         "artworkUrl": "https://img.youtube.com/vi/j87D8QMNe5k/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 203,
         "orderIndex": 26,
         "id": "track-1-26-j87D8QMNe5k"
       },
@@ -707,7 +707,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/A6NwRYq9sTM",
         "artworkUrl": "https://img.youtube.com/vi/A6NwRYq9sTM/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 242,
         "orderIndex": 62,
         "id": "track-1-62-A6NwRYq9sTM"
       },
@@ -718,7 +718,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/66o3OsfVDiI",
         "artworkUrl": "https://img.youtube.com/vi/66o3OsfVDiI/hqdefault.jpg",
-        "durationSeconds": 240,
+        "durationSeconds": 301,
         "orderIndex": 63,
         "id": "track-1-63-66o3OsfVDiI"
       },
@@ -729,7 +729,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/7cTTSkwk1kc",
         "artworkUrl": "https://img.youtube.com/vi/7cTTSkwk1kc/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 286,
         "orderIndex": 64,
         "id": "track-1-64-7cTTSkwk1kc"
       },
@@ -740,7 +740,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/2NgDugvUjZs",
         "artworkUrl": "https://img.youtube.com/vi/2NgDugvUjZs/hqdefault.jpg",
-        "durationSeconds": 240,
+        "durationSeconds": 269,
         "orderIndex": 65,
         "id": "track-1-65-2NgDugvUjZs"
       },
@@ -751,7 +751,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/-dauLSmMPBg",
         "artworkUrl": "https://img.youtube.com/vi/-dauLSmMPBg/hqdefault.jpg",
-        "durationSeconds": 230,
+        "durationSeconds": 282,
         "orderIndex": 66,
         "id": "track-1-66--dauLSmMPBg"
       },
@@ -762,7 +762,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/uDumrcpCZDE",
         "artworkUrl": "https://img.youtube.com/vi/uDumrcpCZDE/hqdefault.jpg",
-        "durationSeconds": 220,
+        "durationSeconds": 301,
         "orderIndex": 67,
         "id": "track-1-67-uDumrcpCZDE"
       },
@@ -773,7 +773,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/08RR4i24fBQ",
         "artworkUrl": "https://img.youtube.com/vi/08RR4i24fBQ/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 244,
         "orderIndex": 68,
         "id": "track-1-68-08RR4i24fBQ"
       },
@@ -784,7 +784,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/1koSBje19Es",
         "artworkUrl": "https://img.youtube.com/vi/1koSBje19Es/hqdefault.jpg",
-        "durationSeconds": 200,
+        "durationSeconds": 224,
         "orderIndex": 69,
         "id": "track-1-69-1koSBje19Es"
       },
@@ -795,7 +795,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/Jry9XwKIplk",
         "artworkUrl": "https://img.youtube.com/vi/Jry9XwKIplk/hqdefault.jpg",
-        "durationSeconds": 220,
+        "durationSeconds": 259,
         "orderIndex": 70,
         "id": "track-1-70-Jry9XwKIplk"
       },
@@ -806,7 +806,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/G3wcY_DVZO0",
         "artworkUrl": "https://img.youtube.com/vi/G3wcY_DVZO0/hqdefault.jpg",
-        "durationSeconds": 220,
+        "durationSeconds": 211,
         "orderIndex": 71,
         "id": "track-1-71-G3wcY_DVZO0"
       },
@@ -817,7 +817,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/xAjleY11ErY",
         "artworkUrl": "https://img.youtube.com/vi/xAjleY11ErY/hqdefault.jpg",
-        "durationSeconds": 220,
+        "durationSeconds": 225,
         "orderIndex": 72,
         "id": "track-1-72-xAjleY11ErY"
       },
@@ -828,7 +828,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/cUMBTCcqHjE",
         "artworkUrl": "https://img.youtube.com/vi/cUMBTCcqHjE/hqdefault.jpg",
-        "durationSeconds": 195,
+        "durationSeconds": 215,
         "orderIndex": 73,
         "id": "track-1-73-cUMBTCcqHjE"
       },
@@ -839,7 +839,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/ivsq9AJy7t0",
         "artworkUrl": "https://img.youtube.com/vi/ivsq9AJy7t0/hqdefault.jpg",
-        "durationSeconds": 180,
+        "durationSeconds": 198,
         "orderIndex": 74,
         "id": "track-1-74-ivsq9AJy7t0"
       },
@@ -850,7 +850,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/7NsURBp3lMA",
         "artworkUrl": "https://img.youtube.com/vi/7NsURBp3lMA/hqdefault.jpg",
-        "durationSeconds": 215,
+        "durationSeconds": 231,
         "orderIndex": 75,
         "id": "track-1-75-7NsURBp3lMA"
       },
@@ -861,7 +861,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/21jQazRbvVc",
         "artworkUrl": "https://img.youtube.com/vi/21jQazRbvVc/hqdefault.jpg",
-        "durationSeconds": 240,
+        "durationSeconds": 226,
         "orderIndex": 76,
         "id": "track-1-76-21jQazRbvVc"
       },
@@ -872,7 +872,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/wwVJkE0X4CY",
         "artworkUrl": "https://img.youtube.com/vi/wwVJkE0X4CY/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 365,
         "orderIndex": 77,
         "id": "track-1-77-wwVJkE0X4CY"
       },
@@ -883,7 +883,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/YTqW_lZiEYA",
         "artworkUrl": "https://img.youtube.com/vi/YTqW_lZiEYA/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 316,
         "orderIndex": 78,
         "id": "track-1-78-YTqW_lZiEYA"
       },
@@ -894,7 +894,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/7l0Gb0LDP1s",
         "artworkUrl": "https://img.youtube.com/vi/7l0Gb0LDP1s/hqdefault.jpg",
-        "durationSeconds": 250,
+        "durationSeconds": 255,
         "orderIndex": 79,
         "id": "track-1-79-7l0Gb0LDP1s"
       },
@@ -905,7 +905,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/O0ktsguogfc",
         "artworkUrl": "https://img.youtube.com/vi/O0ktsguogfc/hqdefault.jpg",
-        "durationSeconds": 235,
+        "durationSeconds": 119,
         "orderIndex": 80,
         "id": "track-1-80-O0ktsguogfc"
       },
@@ -916,7 +916,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/ed6URNZkPgI",
         "artworkUrl": "https://img.youtube.com/vi/ed6URNZkPgI/hqdefault.jpg",
-        "durationSeconds": 220,
+        "durationSeconds": 250,
         "orderIndex": 81,
         "id": "track-1-81-ed6URNZkPgI"
       },
@@ -927,7 +927,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/tOLN3ruNFpA",
         "artworkUrl": "https://img.youtube.com/vi/tOLN3ruNFpA/hqdefault.jpg",
-        "durationSeconds": 245,
+        "durationSeconds": 171,
         "orderIndex": 82,
         "id": "track-1-82-tOLN3ruNFpA"
       },
@@ -938,7 +938,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/5SA6QPyTSUU",
         "artworkUrl": "https://img.youtube.com/vi/5SA6QPyTSUU/hqdefault.jpg",
-        "durationSeconds": 230,
+        "durationSeconds": 232,
         "orderIndex": 83,
         "id": "track-1-83-5SA6QPyTSUU"
       },
@@ -949,7 +949,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/vvvjxVHwg5E",
         "artworkUrl": "https://img.youtube.com/vi/vvvjxVHwg5E/hqdefault.jpg",
-        "durationSeconds": 260,
+        "durationSeconds": 207,
         "orderIndex": 84,
         "id": "track-1-84-vvvjxVHwg5E"
       },
@@ -960,7 +960,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/tJYBPYb6xg0",
         "artworkUrl": "https://img.youtube.com/vi/tJYBPYb6xg0/hqdefault.jpg",
-        "durationSeconds": 225,
+        "durationSeconds": 204,
         "orderIndex": 85,
         "id": "track-1-85-tJYBPYb6xg0"
       },
@@ -971,7 +971,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/5fY7B8Jv1Ss",
         "artworkUrl": "https://img.youtube.com/vi/5fY7B8Jv1Ss/hqdefault.jpg",
-        "durationSeconds": 310,
+        "durationSeconds": 300,
         "orderIndex": 86,
         "id": "track-1-86-5fY7B8Jv1Ss"
       },
@@ -982,7 +982,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/89KF9qgW3Aw",
         "artworkUrl": "https://img.youtube.com/vi/89KF9qgW3Aw/hqdefault.jpg",
-        "durationSeconds": 275,
+        "durationSeconds": 221,
         "orderIndex": 87,
         "id": "track-1-87-89KF9qgW3Aw"
       },
@@ -993,7 +993,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/j0a3RLeZdgM",
         "artworkUrl": "https://img.youtube.com/vi/j0a3RLeZdgM/hqdefault.jpg",
-        "durationSeconds": 280,
+        "durationSeconds": 252,
         "orderIndex": 88,
         "id": "track-1-88-j0a3RLeZdgM"
       },
@@ -1004,7 +1004,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/JwnE2lJVBtQ",
         "artworkUrl": "https://img.youtube.com/vi/JwnE2lJVBtQ/hqdefault.jpg",
-        "durationSeconds": 240,
+        "durationSeconds": 265,
         "orderIndex": 89,
         "id": "track-1-89-JwnE2lJVBtQ"
       },
@@ -1015,7 +1015,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/13PSQ31fuaw",
         "artworkUrl": "https://img.youtube.com/vi/13PSQ31fuaw/hqdefault.jpg",
-        "durationSeconds": 235,
+        "durationSeconds": 254,
         "orderIndex": 90,
         "id": "track-1-90-13PSQ31fuaw"
       },
@@ -1026,7 +1026,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/Ga1hJenRwDc",
         "artworkUrl": "https://img.youtube.com/vi/Ga1hJenRwDc/hqdefault.jpg",
-        "durationSeconds": 250,
+        "durationSeconds": 306,
         "orderIndex": 91,
         "id": "track-1-91-Ga1hJenRwDc"
       },
@@ -1037,7 +1037,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/bhaS8sOfYIo",
         "artworkUrl": "https://img.youtube.com/vi/bhaS8sOfYIo/hqdefault.jpg",
-        "durationSeconds": 270,
+        "durationSeconds": 290,
         "orderIndex": 92,
         "id": "track-1-92-bhaS8sOfYIo"
       },
@@ -1048,7 +1048,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/HSxY0WYP9A4",
         "artworkUrl": "https://img.youtube.com/vi/HSxY0WYP9A4/hqdefault.jpg",
-        "durationSeconds": 265,
+        "durationSeconds": 239,
         "orderIndex": 93,
         "id": "track-1-93-HSxY0WYP9A4"
       },
@@ -1059,7 +1059,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/GnDM9FvDz4E",
         "artworkUrl": "https://img.youtube.com/vi/GnDM9FvDz4E/hqdefault.jpg",
-        "durationSeconds": 215,
+        "durationSeconds": 234,
         "orderIndex": 94,
         "id": "track-1-94-GnDM9FvDz4E"
       },
@@ -1070,7 +1070,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/8M4-OfFaYSg",
         "artworkUrl": "https://img.youtube.com/vi/8M4-OfFaYSg/hqdefault.jpg",
-        "durationSeconds": 270,
+        "durationSeconds": 299,
         "orderIndex": 95,
         "id": "track-1-95-8M4-OfFaYSg"
       },
@@ -1081,7 +1081,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/gAWT1gegiao",
         "artworkUrl": "https://img.youtube.com/vi/gAWT1gegiao/hqdefault.jpg",
-        "durationSeconds": 320,
+        "durationSeconds": 363,
         "orderIndex": 96,
         "id": "track-1-96-gAWT1gegiao"
       },
@@ -1092,7 +1092,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/q-lKDC8CqZE",
         "artworkUrl": "https://img.youtube.com/vi/q-lKDC8CqZE/hqdefault.jpg",
-        "durationSeconds": 290,
+        "durationSeconds": 298,
         "orderIndex": 97,
         "id": "track-1-97-q-lKDC8CqZE"
       },
@@ -1103,7 +1103,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/hRt5t5md174",
         "artworkUrl": "https://img.youtube.com/vi/hRt5t5md174/hqdefault.jpg",
-        "durationSeconds": 260,
+        "durationSeconds": 280,
         "orderIndex": 98,
         "id": "track-1-98-hRt5t5md174"
       }
@@ -1163,7 +1163,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/7GYJcXSLwYo",
         "artworkUrl": "https://img.youtube.com/vi/7GYJcXSLwYo/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 170,
         "orderIndex": 1,
         "id": "track-4-1-7GYJcXSLwYo"
       },
@@ -1174,7 +1174,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/4h5DXcN6cd4",
         "artworkUrl": "https://img.youtube.com/vi/4h5DXcN6cd4/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 199,
         "orderIndex": 2,
         "id": "track-4-2-4h5DXcN6cd4"
       },
@@ -1185,7 +1185,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/4zyCkmAS1Oo",
         "artworkUrl": "https://img.youtube.com/vi/4zyCkmAS1Oo/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 260,
         "orderIndex": 3,
         "id": "track-4-3-4zyCkmAS1Oo"
       },
@@ -1196,7 +1196,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/hnkfDCbULxk",
         "artworkUrl": "https://img.youtube.com/vi/hnkfDCbULxk/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 207,
         "orderIndex": 4,
         "id": "track-4-4-hnkfDCbULxk"
       },
@@ -1207,7 +1207,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/G9DnRI1J2wo",
         "artworkUrl": "https://img.youtube.com/vi/G9DnRI1J2wo/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 246,
         "orderIndex": 5,
         "id": "track-4-5-G9DnRI1J2wo"
       }
@@ -1227,7 +1227,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/HjqqrcGBqsw",
         "artworkUrl": "https://img.youtube.com/vi/HjqqrcGBqsw/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 222,
         "orderIndex": 1,
         "id": "track-5-1-HjqqrcGBqsw"
       },
@@ -1238,7 +1238,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/3bC2suUlS3w",
         "artworkUrl": "https://img.youtube.com/vi/3bC2suUlS3w/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 216,
         "orderIndex": 2,
         "id": "track-5-2-3bC2suUlS3w"
       },
@@ -1249,7 +1249,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/YXG0AW4eidI",
         "artworkUrl": "https://img.youtube.com/vi/YXG0AW4eidI/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 311,
         "orderIndex": 3,
         "id": "track-5-3-YXG0AW4eidI"
       },
@@ -1260,7 +1260,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/guv_YlxJIHo",
         "artworkUrl": "https://img.youtube.com/vi/guv_YlxJIHo/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 256,
         "orderIndex": 4,
         "id": "track-5-4-guv_YlxJIHo"
       },
@@ -1271,7 +1271,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/BRo3gwIvj60",
         "artworkUrl": "https://img.youtube.com/vi/BRo3gwIvj60/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 229,
         "orderIndex": 5,
         "id": "track-5-5-BRo3gwIvj60"
       },
@@ -1282,7 +1282,7 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "provider": "YOUTUBE_EMBED",
         "embedUrl": "https://www.youtube-nocookie.com/embed/Whr3M4P2RKE",
         "artworkUrl": "https://img.youtube.com/vi/Whr3M4P2RKE/hqdefault.jpg",
-        "durationSeconds": 210,
+        "durationSeconds": 172,
         "orderIndex": 6,
         "id": "track-5-6-Whr3M4P2RKE"
       }
