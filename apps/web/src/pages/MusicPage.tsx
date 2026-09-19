@@ -4,6 +4,7 @@ import { useMusicPlayer, MusicTrack } from '../context/MusicPlayerContext';
 import { useLanguage } from '../context/LanguageContext';
 import FestiveButton from '../components/common/FestiveButton';
 import { apiFetch } from '../lib/api';
+import { CURATED_PLAYLISTS, ALL_CURATED_TRACKS } from '../data/curatedPlaylists';
 
 interface Playlist {
   id: string;
@@ -18,10 +19,10 @@ export const MusicPage: React.FC = () => {
   const { t } = useLanguage();
   const { activeTrack, isPlaying, playTrack, togglePlay } = useMusicPlayer();
 
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>(CURATED_PLAYLISTS as Playlist[]);
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [tracks, setTracks] = useState<MusicTrack[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [tracks, setTracks] = useState<MusicTrack[]>(ALL_CURATED_TRACKS as MusicTrack[]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const categories = [
     { key: 'ALL', label: 'সমস্ত গান / All' },
@@ -36,19 +37,38 @@ export const MusicPage: React.FC = () => {
     apiFetch('/api/v1/music/playlists')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setPlaylists(data.playlists);
-          const allTracks = data.playlists.flatMap((p: Playlist) => p.tracks);
+        if (data.success && Array.isArray(data.playlists) && data.playlists.length > 0) {
+          const apiTracks: MusicTrack[] = data.playlists.flatMap((p: Playlist) => p.tracks);
+          const trackMap = new Map<string, MusicTrack>();
+
+          // Pre-populate with all 111 curated tracks
+          (ALL_CURATED_TRACKS as MusicTrack[]).forEach((t) => {
+            const key = t.embedUrl || t.title.toLowerCase().trim();
+            trackMap.set(key, t);
+          });
+
+          // Overlay remote API tracks
+          apiTracks.forEach((t: MusicTrack) => {
+            const key = t.embedUrl || t.title.toLowerCase().trim();
+            trackMap.set(key, { ...trackMap.get(key), ...t });
+          });
+
+          const mergedTracks = Array.from(trackMap.values());
           // Always ensure Dugga Elo is default at the top
-          allTracks.sort((a: MusicTrack, b: MusicTrack) => {
+          mergedTracks.sort((a: MusicTrack, b: MusicTrack) => {
             const aIsDugga = a.title.toLowerCase().includes('dugga elo');
             const bIsDugga = b.title.toLowerCase().includes('dugga elo');
             if (aIsDugga && !bIsDugga) return -1;
             if (!aIsDugga && bIsDugga) return 1;
             return 0;
           });
-          setTracks(allTracks);
+
+          setTracks(mergedTracks);
+          setPlaylists(data.playlists);
         }
+      })
+      .catch((err) => {
+        console.warn('Using offline curated music library', err);
       })
       .finally(() => setIsLoading(false));
   }, []);

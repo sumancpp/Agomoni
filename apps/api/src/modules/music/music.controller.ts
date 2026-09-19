@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../prisma/client.js';
 import { authenticate, requireRoles, AuthenticatedRequest } from '../../common/middleware/auth.middleware.js';
+import { autoSeedIfEmpty } from '../../prisma/seed.js';
 
 const router = Router();
 
@@ -39,6 +40,11 @@ const trackSchema = z.object({
 // GET /api/v1/music/playlists (Public playlists with active tracks)
 router.get('/playlists', async (req, res, next) => {
   try {
+    const trackCount = await prisma.musicTrack.count();
+    if (trackCount < 111) {
+      await autoSeedIfEmpty();
+    }
+
     const playlists = await prisma.musicPlaylist.findMany({
       where: { isActive: true },
       include: {
@@ -52,6 +58,21 @@ router.get('/playlists', async (req, res, next) => {
     return res.json({
       success: true,
       playlists,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET & POST /api/v1/music/sync (Explicitly synchronize curated tracks)
+router.all('/sync', async (_req, res, next) => {
+  try {
+    await autoSeedIfEmpty();
+    const count = await prisma.musicTrack.count();
+    return res.json({
+      success: true,
+      message: `Database synchronized with ${count} tracks`,
+      count,
     });
   } catch (error) {
     next(error);

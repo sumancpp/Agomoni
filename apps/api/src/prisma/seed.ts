@@ -1432,9 +1432,10 @@ export { main as seedDatabase };
 
 export async function autoSeedIfEmpty() {
   try {
-    const count = await prisma.musicPlaylist.count();
-    if (count === 0) {
-      console.log('🌱 Database is empty (0 playlists found). Auto-seeding initial festive tracks & calendar...');
+    const playlistCount = await prisma.musicPlaylist.count();
+    const trackCount = await prisma.musicTrack.count();
+    if (playlistCount === 0 || trackCount < 111) {
+      console.log(`🌱 Database needs festive track sync (${playlistCount} playlists, ${trackCount} tracks found). Syncing all 111 curated tracks...`);
       await main();
     }
   } catch (err: any) {

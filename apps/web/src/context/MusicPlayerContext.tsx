@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { apiFetch } from '../lib/api';
+import { ALL_CURATED_TRACKS } from '../data/curatedPlaylists';
 
 export interface MusicTrack {
   id: string;
@@ -94,25 +95,40 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [volume, setVolumeState] = useState<number>(0.8);
   const [isMiniPlayerVisible, setIsMiniPlayerVisible] = useState<boolean>(false);
   const [isFullPlayerOpen, setIsFullPlayerOpen] = useState<boolean>(false);
-  const [playlist, setPlaylist] = useState<MusicTrack[]>([]);
+  const [playlist, setPlaylist] = useState<MusicTrack[]>(ALL_CURATED_TRACKS as MusicTrack[]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Pre-load all festive tracks on mount so the playlist queue is immediately available
+  // Pre-load and merge all festive tracks on mount so the playlist queue is immediately available
   useEffect(() => {
     apiFetch('/api/v1/music/playlists')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.playlists) && data.playlists.length > 0) {
-          const allTracks: MusicTrack[] = data.playlists.flatMap((p: any) => p.tracks);
-          allTracks.sort((a, b) => {
+          const apiTracks: MusicTrack[] = data.playlists.flatMap((p: any) => p.tracks);
+          const trackMap = new Map<string, MusicTrack>();
+
+          // Pre-populate with all 111 curated tracks
+          (ALL_CURATED_TRACKS as MusicTrack[]).forEach((t) => {
+            const key = t.embedUrl || t.title.toLowerCase().trim();
+            trackMap.set(key, t);
+          });
+
+          // Overlay remote API tracks
+          apiTracks.forEach((t: MusicTrack) => {
+            const key = t.embedUrl || t.title.toLowerCase().trim();
+            trackMap.set(key, { ...trackMap.get(key), ...t });
+          });
+
+          const mergedTracks = Array.from(trackMap.values());
+          mergedTracks.sort((a, b) => {
             const aIsDugga = a.title.toLowerCase().includes('dugga elo');
             const bIsDugga = b.title.toLowerCase().includes('dugga elo');
             if (aIsDugga && !bIsDugga) return -1;
             if (!aIsDugga && bIsDugga) return 1;
             return 0;
           });
-          setPlaylist(allTracks);
+          setPlaylist(mergedTracks);
         }
       })
       .catch(() => {});
