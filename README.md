@@ -3,20 +3,20 @@
 > **"এই পুজোয়, কিছু মানুষ আপন হোক।"**  
 > *"Celebrate. Connect. Remember. Stay Safe."*
 
-AGOMONI (আগমনী) is a production-ready, full-stack Progressive Web App (PWA) that blends Bengali Durga Puja culture, pandal companion discovery (18+), lost & found assistance, digital memory capsules, emergency safety helplines, live festive calendars, and an authentic 111-track music streaming experience with real-time chat and Razorpay payments.
+AGOMONI (আগমনী) is a production-ready, full-stack Progressive Web App (PWA) that blends Bengali Durga Puja culture, pandal companion discovery (18+), lost & found assistance, digital memory capsules, emergency safety helplines, live festive calendars, and an authentic 113-track music streaming experience with real-time chat and Razorpay payments.
 
 ---
 
 ## 🌟 Core Features & Pillars
 
-### 1. 🎵 111-Track Festive Audio Suite & Sync Engine
-- **111 Curated Authentic Songs**: 5 handpicked playlists spanning all moods of Durga Puja:
+### 1. 🎵 113-Track Festive Audio Suite & Sync Engine
+- **113 Curated Authentic Songs**: 5 handpicked playlists spanning all moods of Durga Puja:
   - 🪔 **Sacred Mahalaya & Chandipath** (*মহালয়া ও চণ্ডীপাঠ — বীরেন্দ্রকৃষ্ণ ভদ্র*)
   - 🎵 **Grand Durga Puja Hits & Anthems** (*পূজোর সেরা গান ও উৎসবের সুর*)
   - 🥁 **Traditional Dhak, Dhunuchi & Aarti** (*ঐতিহ্যবাহী ঢাক ও ধুনুচি নাচ*)
   - 🌺 **Timeless Agomoni Classics** (*চিরন্তন আগমনী ও ভক্তিমূলক গান*)
   - 🌙 **Serene Autumn Evening & Ambient Melodies** (*শরতের স্নিগ্ধ সুর ও স্মৃতি*)
-- **Exact Runtime Synchronization**: All 111 tracks calibrated against verified YouTube metadata. Eliminates artificial premature song cutoffs and runaway progress bars.
+- **Exact Runtime Synchronization**: All 113 tracks calibrated against verified YouTube metadata. Eliminates artificial premature song cutoffs and runaway progress bars.
 - **True Pause/Resume Preservation**: Retains the exact second timestamp upon pause (e.g. pausing at `1:35` and resuming plays immediately from `1:35`, never restarting from `0:00`).
 - **Persistent Global Player**: Survives page navigations with a floating Mini-Player and an expandable Full-Screen Modal featuring interactive scrubbers, volume controls, and track queue drawers.
 - **Safety Audio Interlock**: Automatic `pauseForEmergency()` switch that mutes or pauses audio immediately when opening emergency helplines.
@@ -146,7 +146,7 @@ Agomoni/
 │       └── src/
 │           ├── components/     # Reusable layout, music, and feature components
 │           ├── context/        # MusicPlayer, Language, and Auth contexts
-│           ├── data/           # 111 curated tracks & festival calendar data
+│           ├── data/           # 113 curated tracks & festival calendar data
 │           ├── pages/          # Application views (Home, Date, Songs, Memory, etc.)
 │           └── lib/            # API client & utility functions
 ```
@@ -186,7 +186,7 @@ npm run db:generate
 # Push schema to local SQLite database
 npm run db:push
 
-# Seed authentic playlists (111 tracks), calendar, and admin account
+# Seed authentic playlists (113 tracks), calendar, and admin account
 npm run db:seed
 ```
 

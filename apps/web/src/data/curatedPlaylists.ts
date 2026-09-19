@@ -1,5 +1,5 @@
 // Pre-bundled curated playlists for AGOMONI
-// Ensures all 111 songs are available instantly offline and in application
+// Ensures all 113 songs are available instantly offline and in application
 
 export interface CuratedTrack {
   id: string;
@@ -1210,6 +1210,28 @@ export const CURATED_PLAYLISTS: CuratedPlaylist[] = [
         "durationSeconds": 246,
         "orderIndex": 5,
         "id": "track-4-5-G9DnRI1J2wo"
+      },
+      {
+        "title": "Agomonir Gaan (আগমনীর গান)",
+        "artist": "Anupam Roy",
+        "category": "AGOMONI",
+        "provider": "YOUTUBE_EMBED",
+        "embedUrl": "https://www.youtube-nocookie.com/embed/MsqpjM09MrY",
+        "artworkUrl": "https://img.youtube.com/vi/MsqpjM09MrY/hqdefault.jpg",
+        "durationSeconds": 363,
+        "orderIndex": 6,
+        "id": "track-4-6-MsqpjM09MrY"
+      },
+      {
+        "title": "Jaago Uma (জাগো উমা - উমা এলো ঘরে)",
+        "artist": "Anupam Roy",
+        "category": "AGOMONI",
+        "provider": "YOUTUBE_EMBED",
+        "embedUrl": "https://www.youtube-nocookie.com/embed/fpuadv59iYw",
+        "artworkUrl": "https://img.youtube.com/vi/fpuadv59iYw/hqdefault.jpg",
+        "durationSeconds": 317,
+        "orderIndex": 7,
+        "id": "track-4-7-fpuadv59iYw"
       }
     ],
     "id": "playlist-4"
